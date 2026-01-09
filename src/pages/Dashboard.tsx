@@ -40,6 +40,7 @@ export default function Dashboard() {
   const [credits, setCredits] = useState<CreditBalance | null>(null);
   const [limits, setLimits] = useState<SendingLimits | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
   const [recentEmails, setRecentEmails] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("7d");
@@ -51,11 +52,12 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [overviewData, creditsData, limitsData, chartResponse, emailsData] = await Promise.all([
+      const [overviewData, creditsData, limitsData, chartResponse, campaignsData, emailsData] = await Promise.all([
         api.getDashboardOverview().catch(() => null),
         api.getCreditBalance().catch(() => null),
         api.getSendingLimits().catch(() => null),
         api.getChartData(period).catch(() => ({ daily_volume: [] })),
+        api.getRecentCampaigns(5).catch(() => ({ campaigns: [], total: 0 })),
         api.getRecentEmails(5).catch(() => ({ emails: [], total: 0 })),
       ]);
 
@@ -63,6 +65,7 @@ export default function Dashboard() {
       setCredits(creditsData);
       setLimits(limitsData);
       setChartData(chartResponse.daily_volume);
+      setRecentCampaigns(campaignsData.campaigns);
       setRecentEmails(emailsData.emails);
     } catch (error) {
       toast.error("Failed to load dashboard data");
@@ -281,7 +284,34 @@ export default function Dashboard() {
         </div>
 
         {/* Bottom Section */}
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-3 gap-6">
+          {/* Recent Campaigns */}
+          <div className="bg-card rounded-xl border border-border overflow-hidden">
+            <div className="flex justify-between items-center p-5 border-b border-border">
+              <h3 className="font-semibold text-foreground">Recent Campaigns</h3>
+              <Link
+                to="/campaigns"
+                className="text-sm font-medium text-primary hover:underline"
+              >
+                View All
+              </Link>
+            </div>
+            {recentCampaigns.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                No recent campaigns
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {recentCampaigns.map((campaign) => (
+                  <div key={campaign.id} className="p-4">
+                    <p className="font-medium text-foreground">{campaign.name}</p>
+                    <p className="text-sm text-muted-foreground">{campaign.status}</p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Recent Emails */}
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="flex justify-between items-center p-5 border-b border-border">
