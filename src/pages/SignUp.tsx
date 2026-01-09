@@ -1,10 +1,12 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Mail, Eye, EyeOff, Check } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 const steps = [
   { id: 1, name: "Account Details" },
@@ -16,9 +18,24 @@ export default function SignUp() {
   const [currentStep, setCurrentStep] = useState(1);
   const [showPassword, setShowPassword] = useState(false);
   const [passwordStrength, setPasswordStrength] = useState<"weak" | "medium" | "strong" | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
+  const navigate = useNavigate();
+
+  // Form data
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
+    company: "",
+    website: "",
+    teamSize: "1-10 employees",
+    phone: "",
+  });
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const password = e.target.value;
+    setFormData({ ...formData, password });
+    
     if (password.length === 0) {
       setPasswordStrength(null);
     } else if (password.length < 6) {
@@ -27,6 +44,42 @@ export default function SignUp() {
       setPasswordStrength("medium");
     } else {
       setPasswordStrength("strong");
+    }
+  };
+
+  const handleContinue = async () => {
+    if (currentStep === 1) {
+      if (!formData.name || !formData.email || !formData.password) {
+        toast.error("Please fill in all required fields");
+        return;
+      }
+      if (passwordStrength === "weak") {
+        toast.error("Please use a stronger password");
+        return;
+      }
+    }
+
+    if (currentStep < 3) {
+      setCurrentStep(currentStep + 1);
+    }
+  };
+
+  const handleCompleteSetup = async () => {
+    setIsLoading(true);
+    try {
+      await api.register({
+        email: formData.email,
+        password: formData.password,
+        name: formData.name,
+        company: formData.company,
+        phone: formData.phone,
+      });
+      toast.success("Account created successfully!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to create account");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -46,7 +99,13 @@ export default function SignUp() {
           <Label htmlFor="fullname">
             Full Name <span className="text-destructive">*</span>
           </Label>
-          <Input id="fullname" placeholder="John Doe" className="h-12" />
+          <Input 
+            id="fullname" 
+            placeholder="John Doe" 
+            className="h-12"
+            value={formData.name}
+            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+          />
         </div>
 
         <div className="space-y-2">
@@ -58,6 +117,8 @@ export default function SignUp() {
             type="email"
             placeholder="you@company.com"
             className="h-12"
+            value={formData.email}
+            onChange={(e) => setFormData({ ...formData, email: e.target.value })}
           />
         </div>
 
@@ -71,6 +132,7 @@ export default function SignUp() {
               type={showPassword ? "text" : "password"}
               placeholder="Create a strong password"
               className="h-12 pr-10"
+              value={formData.password}
               onChange={handlePasswordChange}
             />
             <button
@@ -123,12 +185,24 @@ export default function SignUp() {
           <Label htmlFor="company">
             Company Name <span className="text-destructive">*</span>
           </Label>
-          <Input id="company" placeholder="Acme Inc." className="h-12" />
+          <Input 
+            id="company" 
+            placeholder="Acme Inc." 
+            className="h-12"
+            value={formData.company}
+            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+          />
         </div>
 
         <div className="space-y-2">
           <Label htmlFor="website">Website</Label>
-          <Input id="website" placeholder="https://yourcompany.com" className="h-12" />
+          <Input 
+            id="website" 
+            placeholder="https://yourcompany.com" 
+            className="h-12"
+            value={formData.website}
+            onChange={(e) => setFormData({ ...formData, website: e.target.value })}
+          />
         </div>
 
         <div className="space-y-2">
@@ -136,12 +210,25 @@ export default function SignUp() {
           <select
             id="team-size"
             className="w-full h-12 px-4 border border-input rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-ring"
+            value={formData.teamSize}
+            onChange={(e) => setFormData({ ...formData, teamSize: e.target.value })}
           >
             <option>1-10 employees</option>
             <option>11-50 employees</option>
             <option>51-200 employees</option>
             <option>200+ employees</option>
           </select>
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="phone">Phone Number</Label>
+          <Input 
+            id="phone" 
+            placeholder="+1234567890" 
+            className="h-12"
+            value={formData.phone}
+            onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+          />
         </div>
       </div>
     </>
@@ -174,7 +261,12 @@ export default function SignUp() {
           </div>
         </div>
 
-        <Button variant="outline" className="w-full h-12">
+        <Button 
+          variant="outline" 
+          className="w-full h-12"
+          onClick={handleCompleteSetup}
+          disabled={isLoading}
+        >
           Skip for now
         </Button>
       </div>
@@ -221,7 +313,7 @@ export default function SignUp() {
         </div>
 
         {/* Step Content */}
-        <form>
+        <form onSubmit={(e) => e.preventDefault()}>
           {currentStep === 1 && renderStep1()}
           {currentStep === 2 && renderStep2()}
           {currentStep === 3 && renderStep3()}
@@ -234,6 +326,7 @@ export default function SignUp() {
                 variant="outline"
                 className="flex-1 h-12"
                 onClick={() => setCurrentStep(currentStep - 1)}
+                disabled={isLoading}
               >
                 Back
               </Button>
@@ -242,13 +335,25 @@ export default function SignUp() {
               <Button
                 type="button"
                 className="flex-[2] h-12"
-                onClick={() => setCurrentStep(currentStep + 1)}
+                onClick={handleContinue}
               >
                 Continue
               </Button>
             ) : (
-              <Button asChild className="flex-[2] h-12">
-                <Link to="/dashboard">Complete Setup</Link>
+              <Button 
+                type="button"
+                className="flex-[2] h-12"
+                onClick={handleCompleteSetup}
+                disabled={isLoading}
+              >
+                {isLoading ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Creating account...
+                  </>
+                ) : (
+                  "Complete Setup"
+                )}
               </Button>
             )}
           </div>
