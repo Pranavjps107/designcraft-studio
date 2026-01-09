@@ -25,7 +25,7 @@ import {
   Tooltip,
   ResponsiveContainer,
 } from "recharts";
-import api, { DashboardOverview, CreditBalance, SendingLimits, ChartDataPoint } from "@/lib/api";
+import api, { AnalyticsOverview, CreditBalance, SendingLimits, ChartDataPoint } from "@/lib/api";
 import { toast } from "sonner";
 
 const quickActions = [
@@ -36,7 +36,7 @@ const quickActions = [
 ];
 
 export default function Dashboard() {
-  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [overview, setOverview] = useState<AnalyticsOverview | null>(null);
   const [credits, setCredits] = useState<CreditBalance | null>(null);
   const [limits, setLimits] = useState<SendingLimits | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
@@ -53,7 +53,7 @@ export default function Dashboard() {
     setIsLoading(true);
     try {
       const [overviewData, creditsData, limitsData, chartResponse, campaignsData, emailsData] = await Promise.all([
-        api.getDashboardOverview().catch(() => null),
+        api.getAnalyticsOverview(period).catch(() => null),
         api.getCreditBalance().catch(() => null),
         api.getSendingLimits().catch(() => null),
         api.getChartData(period).catch(() => ({ daily_volume: [] })),
@@ -151,33 +151,33 @@ export default function Dashboard() {
             <>
               <KPICard
                 title="Total Conversations"
-                value={overview?.total_conversations.value.toLocaleString() || "0"}
-                change={`${overview?.total_conversations.change || 0}%`}
-                changeType={overview?.total_conversations.trend === "up" ? "positive" : "negative"}
+                value={overview?.total_conversations.toLocaleString() || "0"}
+                change={`${overview?.conversation_growth_percent || 0}%`}
+                changeType={(overview?.conversation_growth_percent || 0) >= 0 ? "positive" : "negative"}
                 icon={<MessageSquare className="h-5 w-5 text-primary" />}
                 iconBg="green"
               />
               <KPICard
-                title="Active Users"
-                value={overview?.active_users.value.toLocaleString() || "0"}
-                change={`${overview?.active_users.change || 0}%`}
-                changeType={overview?.active_users.trend === "up" ? "positive" : "negative"}
+                title="Total Messages"
+                value={overview?.total_messages.toLocaleString() || "0"}
+                change={`${overview?.inbound_messages || 0} inbound`}
+                changeType="positive"
                 icon={<Users className="h-5 w-5 text-info" />}
                 iconBg="blue"
               />
               <KPICard
-                title="Response Rate"
-                value={`${overview?.response_rate.value || 0}%`}
-                change={`${overview?.response_rate.change || 0}%`}
-                changeType={overview?.response_rate.trend === "up" ? "positive" : "negative"}
+                title="Inbound Messages"
+                value={overview?.inbound_messages.toLocaleString() || "0"}
+                change={`+${(overview?.inbound_messages || 0) > 0 ? "↑" : "↓"}`}
+                changeType={overview?.inbound_messages || 0 > 0 ? "positive" : "negative"}
                 icon={<Zap className="h-5 w-5 text-purple-600" />}
                 iconBg="purple"
               />
               <KPICard
                 title="Avg Response Time"
-                value={overview?.avg_response_time.value || "0m"}
-                change={`${overview?.avg_response_time.change || 0}%`}
-                changeType={overview?.avg_response_time.trend === "down" ? "positive" : "negative"}
+                value={`${Math.round((overview?.average_response_time_seconds || 0) / 60)}m`}
+                change={`${overview?.average_response_time_seconds || 0}s`}
+                changeType="neutral"
                 icon={<Clock className="h-5 w-5 text-orange-600" />}
                 iconBg="orange"
               />

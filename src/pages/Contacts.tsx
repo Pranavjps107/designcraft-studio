@@ -57,8 +57,8 @@ export default function Contacts() {
     const data = await api.getContacts({ page, search, limit: 10 });
 
     setContacts(data.contacts ?? []);
-    setTotalPages(data.pagination?.pages ?? 1);
-    setTotal(data.pagination?.total ?? 0);
+    setTotalPages(Math.ceil((data.total ?? 0) / (data.per_page ?? 10)));
+    setTotal(data.total ?? 0);
   } catch (error) {
     toast.error("Failed to load contacts");
     setContacts([]);
@@ -250,16 +250,16 @@ export default function Contacts() {
                   />
                 </th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Email
+                  Name
                 </th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  First name
+                  Phone
                 </th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Last name
+                  Messages
                 </th>
                 <th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                  Audiences
+                  Last Seen
                 </th>
                 <th className="w-12 px-6 py-4"></th>
               </tr>
@@ -296,31 +296,20 @@ export default function Contacts() {
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <Mail className="h-4 w-4 text-muted-foreground" />
-                        <span className="text-foreground">{contact.email}</span>
+                        <span className="flex items-center justify-center h-8 w-8 bg-primary/10 rounded-full text-xs font-semibold text-primary">
+                          {contact.initials || contact.name.charAt(0)}
+                        </span>
+                        <span className="text-foreground">{contact.name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4 text-foreground">
-                      {contact.name.split(" ")[0]}
+                      {contact.phone}
                     </td>
                     <td className="px-6 py-4 text-foreground">
-                      {contact.name.split(" ").slice(1).join(" ")}
+                      {contact.message_count || 0}
                     </td>
-                    <td className="px-6 py-4">
-                      {contact.tags.length > 0 ? (
-                        <div className="flex gap-2">
-                          {contact.tags.slice(0, 2).map((tag) => (
-                            <Tag key={tag} variant="general">
-                              {tag}
-                            </Tag>
-                          ))}
-                          {contact.tags.length > 2 && (
-                            <span className="text-xs text-muted-foreground">
-                              +{contact.tags.length - 2}
-                            </span>
-                          )}
-                        </div>
-                      ) : null}
+                    <td className="px-6 py-4 text-foreground text-xs">
+                      {contact.last_seen_at ? new Date(contact.last_seen_at).toLocaleDateString() : "Never"}
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-1">

@@ -55,13 +55,13 @@ export default function Analytics() {
     }
   };
 
-  const kpiData = overview?.kpis ? [
-    { title: "Total Conversations", value: overview.kpis.total_conversations.value.toLocaleString(), change: `${overview.kpis.total_conversations.change}%`, up: overview.kpis.total_conversations.trend === "up" },
-    { title: "Conversion Rate", value: `${overview.kpis.conversion_rate.value}%`, change: `${overview.kpis.conversion_rate.change}%`, up: overview.kpis.conversion_rate.trend === "up" },
-    { title: "Avg Response Time", value: overview.kpis.avg_response_time.value, change: `${overview.kpis.avg_response_time.change}%`, up: overview.kpis.avg_response_time.trend === "down" },
-    { title: "Message Volume", value: overview.kpis.message_volume.value, change: `${overview.kpis.message_volume.change}%`, up: overview.kpis.message_volume.trend === "up" },
-    { title: "Active Users", value: overview.kpis.active_users.value.toLocaleString(), change: `${overview.kpis.active_users.change}%`, up: overview.kpis.active_users.trend === "up" },
-    { title: "Bot Accuracy", value: `${overview.kpis.bot_accuracy.value}%`, change: `${overview.kpis.bot_accuracy.change}%`, up: overview.kpis.bot_accuracy.trend === "up" },
+  const kpiData = overview ? [
+    { title: "Total Conversations", value: overview.total_conversations.toLocaleString(), change: `${overview.conversation_growth_percent}%`, up: overview.conversation_growth_percent >= 0 },
+    { title: "Total Messages", value: `${overview.total_messages.toLocaleString()}`, change: `${overview.inbound_messages} inbound`, up: true },
+    { title: "Inbound Messages", value: overview.inbound_messages.toLocaleString(), change: `+↑`, up: true },
+    { title: "Avg Response Time", value: `${Math.round(overview.average_response_time_seconds / 60)}m`, change: `${overview.average_response_time_seconds}s`, up: true },
+    { title: "Outbound Messages", value: overview.outbound_messages.toLocaleString(), change: `Total sent`, up: true },
+    { title: "Growth Rate", value: `${overview.conversation_growth_percent}%`, change: `vs last period`, up: overview.conversation_growth_percent >= 0 },
   ] : [];
 
   const comparisonData = performance?.comparison.metrics || [];

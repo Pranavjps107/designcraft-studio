@@ -41,7 +41,7 @@ export default function Conversations() {
 
   useEffect(() => {
     if (selectedConversation) {
-      loadMessages(selectedConversation.contact.id);
+      loadMessages(selectedConversation.id);
     }
   }, [selectedConversation]);
 
@@ -82,7 +82,7 @@ export default function Conversations() {
 
     setIsSending(true);
     try {
-      const newMessage = await api.sendMessage(selectedConversation.contact.id, messageInput);
+      const newMessage = await api.sendMessage(selectedConversation.id, messageInput);
       setMessages([...messages, newMessage]);
       setMessageInput("");
     } catch (error: any) {
@@ -95,7 +95,7 @@ export default function Conversations() {
   const handleArchive = async () => {
     if (!selectedConversation) return;
     try {
-      await api.archiveConversation(selectedConversation.contact.id);
+      await api.archiveConversation(selectedConversation.id);
       toast.success("Conversation archived");
       loadConversations();
     } catch (error) {
@@ -106,11 +106,11 @@ export default function Conversations() {
   const handleExport = async () => {
     if (!selectedConversation) return;
     try {
-      const blob = await api.exportConversation(selectedConversation.contact.id);
+      const blob = await api.exportConversation(selectedConversation.id);
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `conversation-${selectedConversation.contact?.name || "export"}.csv`;
+      a.download = `conversation-${selectedConversation?.name || "export"}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -121,7 +121,7 @@ export default function Conversations() {
   const handleBlock = async () => {
     if (!selectedConversation) return;
     try {
-      await api.blockContact(selectedConversation.contact.id);
+      await api.blockContact(selectedConversation.id);
       toast.success("Contact blocked");
       loadConversations();
     } catch (error) {
@@ -189,7 +189,6 @@ export default function Conversations() {
               </div>
             ) : (
               conversations
-                .filter((conv) => conv.contact)
                 .map((conv) => (
                 <div
                   key={conv.id}
@@ -202,12 +201,12 @@ export default function Conversations() {
                   )}
                 >
                   <div className="w-12 h-12 rounded-full bg-info flex-shrink-0 flex items-center justify-center text-info-foreground font-semibold">
-                    {safeInitials(conv.contact)}
+                    {conv.initials || conv.name.charAt(0).toUpperCase()}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-semibold text-foreground truncate">
-                        {conv.contact?.name || "Unknown"}
+                        {conv.name || "Unknown"}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(conv.last_message_at).toLocaleDateString()}
@@ -236,16 +235,16 @@ export default function Conversations() {
               <div className="h-16 px-6 border-b border-border flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-info flex items-center justify-center text-info-foreground font-semibold">
-                    {safeInitials(selectedConversation.contact)}
+                    {selectedConversation.initials || selectedConversation.name.charAt(0).toUpperCase()}
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
-                      {selectedConversation.contact?.name || "Unknown"}
+                      {selectedConversation.name || "Unknown"}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      <span className={selectedConversation.contact?.is_online ? "text-primary" : "text-muted-foreground"}>
-                        ● {selectedConversation.contact?.is_online ? "Online" : "Offline"}
-                      </span> • {selectedConversation.contact?.phone || "N/A"}
+                      <span className="text-muted-foreground">
+                        ● Offline
+                      </span> • {selectedConversation.phone || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -289,7 +288,7 @@ export default function Conversations() {
                               : "bg-info text-info-foreground"
                           )}
                         >
-                          {msg.direction === "outbound" ? "🤖" : safeInitials(selectedConversation.contact)}
+                          {msg.direction === "outbound" ? "🤖" : selectedConversation.initials || selectedConversation.name.charAt(0).toUpperCase()}
                         </div>
                         <div className={cn("max-w-[60%]", msg.direction === "outbound" && "text-right")}>
                           <div
@@ -347,16 +346,16 @@ export default function Conversations() {
         </div>
 
         {/* Contact Details */}
-        {selectedConversation && selectedConversation.contact && (
+        {selectedConversation && (
           <div className="w-80 bg-card border-l border-border overflow-y-auto">
             <div className="p-6 text-center border-b border-border">
               <div className="w-20 h-20 rounded-full bg-info flex items-center justify-center text-3xl font-semibold text-info-foreground mx-auto mb-4">
                 {safeInitials(selectedConversation.contact)}
               </div>
               <h3 className="text-xl font-bold text-foreground">
-                {selectedConversation.contact?.name || "Unknown"}
+                {selectedConversation.name || "Unknown"}
               </h3>
-              <p className="text-muted-foreground">{selectedConversation.contact?.phone || "N/A"}</p>
+              <p className="text-muted-foreground">{selectedConversation.phone || "N/A"}</p>
             </div>
 
             <div className="p-6 border-b border-border">
@@ -369,9 +368,9 @@ export default function Conversations() {
                     <Mail className="h-4 w-4 text-muted-foreground" />
                   </div>
                   <div>
-                    <p className="text-xs text-muted-foreground">Email</p>
+                    <p className="text-xs text-muted-foreground">Phone</p>
                     <p className="text-sm font-medium text-foreground">
-                      {conversationDetails?.contact.email || "Not available"}
+                      {selectedConversation.phone || "Not available"}
                     </p>
                   </div>
                 </div>
@@ -382,7 +381,7 @@ export default function Conversations() {
                   <div>
                     <p className="text-xs text-muted-foreground">Location</p>
                     <p className="text-sm font-medium text-foreground">
-                      {conversationDetails?.contact.location || "Not available"}
+                      {selectedConversation.attributes?.location || "Not available"}
                     </p>
                   </div>
                 </div>
@@ -394,9 +393,9 @@ export default function Conversations() {
                 Tags
               </p>
               <div className="flex flex-wrap gap-2">
-                {conversationDetails?.contact.tags?.map((tag) => (
-                  <span key={tag} className="px-3 py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium">
-                    {tag}
+                {selectedConversation.attributes && Object.entries(selectedConversation.attributes).map(([key, value]) => (
+                  <span key={key} className="px-3 py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium">
+                    {value}
                   </span>
                 ))}
                 {(!conversationDetails?.contact.tags || (Array.isArray(conversationDetails.contact.tags) && conversationDetails.contact.tags.length === 0)) && (

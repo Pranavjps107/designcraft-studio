@@ -49,25 +49,28 @@ export interface SendingLimits {
 export interface Contact {
   id: string;
   name: string;
-  email: string;
   phone: string;
-  location?: string;
-  tags: string[];
-  message_count?: number;
-  last_active?: string;
   initials?: string;
-  is_online?: boolean;
   attributes?: Record<string, string>;
+  message_count?: number;
   created_at?: string;
   last_seen_at?: string;
+  email?: string;
+  location?: string;
+  tags?: string[];
+  last_active?: string;
+  is_online?: boolean;
 }
 
 export interface Conversation {
   id: string;
-  contact: Contact;
+  name: string;
+  phone: string;
+  last_seen_at: string;
   last_message: string;
-  unread_count: number;
   last_message_at: string;
+  unread_count: number;
+  contact?: Contact;
 }
 
 export interface Message {
@@ -91,14 +94,12 @@ export interface ConversationMessages {
 }
 
 export interface AnalyticsOverview {
-  kpis: {
-    total_conversations: { value: number; change: number; trend: 'up' | 'down' };
-    conversion_rate: { value: number; change: number; trend: 'up' | 'down' };
-    avg_response_time: { value: string; change: number; trend: 'up' | 'down' };
-    message_volume: { value: string; change: number; trend: 'up' | 'down' };
-    active_users: { value: number; change: number; trend: 'up' | 'down' };
-    bot_accuracy: { value: number; change: number; trend: 'up' | 'down' };
-  };
+  total_messages: number;
+  total_conversations: number;
+  inbound_messages: number;
+  outbound_messages: number;
+  average_response_time_seconds: number;
+  conversation_growth_percent: number;
 }
 
 export interface ConversationTrend {
@@ -316,7 +317,7 @@ class APIClient {
 
   // ==================== DASHBOARD APIs ====================
 
-  async getDashboardOverview(): Promise<DashboardOverview> {
+  async getDashboardOverview(): Promise<AnalyticsOverview> {
     return this.request(`${API_BASE_URL}/v1/analytics/overview`);
   }
 
@@ -354,12 +355,11 @@ class APIClient {
     filter?: 'all' | 'unread' | 'archived';
     page?: number;
     limit?: number;
-  } = {}): Promise<{ conversations: Conversation[]; total: number; page: number; pages: number }> {
+  } = {}): Promise<{ conversations: Conversation[]; total: number; page: number; per_page: number }> {
     const params = new URLSearchParams();
     if (filters.search) params.set('search', filters.search);
-    if (filters.filter) params.set('filter', filters.filter);
     if (filters.page) params.set('page', filters.page.toString());
-    if (filters.limit) params.set('limit', filters.limit.toString());
+    if (filters.limit) params.set('per_page', filters.limit.toString());
     return this.request(`${API_BASE_URL}/v1/conversations?${params}`);
   }
 
@@ -403,17 +403,14 @@ class APIClient {
   limit?: number;
 } = {}): Promise<{
   contacts: Contact[];
-  pagination: {
-    page: number;
-    per_page: number;
-    total: number;
-    pages: number;
-  };
+  total: number;
+  page: number;
+  per_page: number;
 }> {
   const params = new URLSearchParams();
   if (filters.search) params.set('search', filters.search);
   if (filters.page) params.set('page', filters.page.toString());
-  if (filters.limit) params.set('limit', filters.limit.toString());
+  if (filters.limit) params.set('per_page', filters.limit.toString());
 
   return this.request(`${API_BASE_URL}/v1/contacts?${params}`);
 }
