@@ -398,20 +398,25 @@ class APIClient {
   // ==================== CONTACTS APIs ====================
 
   async getContacts(filters: {
-    search?: string;
-    page?: number;
-    limit?: number;
-  } = {}): Promise<{ contacts: Contact[]; total: number; page: number; pages: number }> {
-    const params = new URLSearchParams();
-    if (filters.search) params.set('search', filters.search);
-    if (filters.page) params.set('page', filters.page.toString());
-    if (filters.limit) params.set('limit', filters.limit.toString());
-    return this.request(`${API_BASE_URL}/v1/contacts?${params}`);
-  }
+  search?: string;
+  page?: number;
+  limit?: number;
+} = {}): Promise<{
+  contacts: Contact[];
+  pagination: {
+    page: number;
+    per_page: number;
+    total: number;
+    pages: number;
+  };
+}> {
+  const params = new URLSearchParams();
+  if (filters.search) params.set('search', filters.search);
+  if (filters.page) params.set('page', filters.page.toString());
+  if (filters.limit) params.set('limit', filters.limit.toString());
 
-  async getContact(contactId: string): Promise<Contact> {
-    return this.request(`${API_BASE_URL}/v1/contacts/${contactId}`);
-  }
+  return this.request(`${API_BASE_URL}/v1/contacts?${params}`);
+}
 
   async createContact(data: {
     name: string;

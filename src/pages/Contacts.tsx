@@ -52,18 +52,23 @@ export default function Contacts() {
   }, [page, search]);
 
   const loadContacts = async () => {
-    setIsLoading(true);
-    try {
-      const data = await api.getContacts({ page, search, limit: 10 });
-      setContacts(data.contacts);
-      setTotalPages(data.pages);
-      setTotal(data.total);
-    } catch (error) {
-      toast.error("Failed to load contacts");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+  setIsLoading(true);
+  try {
+    const data = await api.getContacts({ page, search, limit: 10 });
+
+    setContacts(data.contacts ?? []);
+    setTotalPages(data.pagination?.pages ?? 1);
+    setTotal(data.pagination?.total ?? 0);
+  } catch (error) {
+    toast.error("Failed to load contacts");
+    setContacts([]);
+    setTotalPages(1);
+    setTotal(0);
+  } finally {
+    setIsLoading(false);
+  }
+};
+
 
   const handleCreateContact = async () => {
     if (!newContact.name || !newContact.email || !newContact.phone) {
