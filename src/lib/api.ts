@@ -363,7 +363,7 @@ class APIClient {
     return this.request(`${API_BASE_URL}/v1/conversations?${params}`);
   }
 
-  async getConversationDetail(contactId: string): Promise<Conversation> {
+  async getConversationDetail(contactId: string): Promise<ConversationMessages> {
     return this.request(`${API_BASE_URL}/v1/conversations/${contactId}`);
   }
 

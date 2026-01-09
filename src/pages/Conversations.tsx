@@ -74,7 +74,8 @@ export default function Conversations() {
       ]);
       
       setMessages(messagesData.messages);
-      setConversationDetails(messagesData);
+      setConversationDetails(detailData);
+
     } catch (error) {
       toast.error("Failed to load messages");
     } finally {
@@ -403,9 +404,10 @@ export default function Conversations() {
                     {value}
                   </span>
                 ))}
-                {(!conversationDetails?.contact.tags || (Array.isArray(conversationDetails.contact.tags) && conversationDetails.contact.tags.length === 0)) && (
-                  <span className="text-sm text-muted-foreground">No tags</span>
-                )}
+                {(!conversationDetails?.contact?.tags ||
+                    conversationDetails.contact.tags.length === 0) && (
+                    <span className="text-sm text-muted-foreground">No tags</span>
+                  )}
               </div>
             </div>
 
