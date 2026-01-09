@@ -70,7 +70,6 @@ export interface Conversation {
   last_message: string;
   last_message_at: string;
   unread_count: number;
-  contact?: Contact;
 }
 
 export interface Message {
@@ -378,11 +377,12 @@ class APIClient {
     });
   }
 
-  async archiveConversation(contactId: string): Promise<{ success: boolean; message: string }> {
+  async archiveConversation(contactId: string) {
     return this.request(`${API_BASE_URL}/v1/conversations/${contactId}/archive`, {
-      method: 'POST',
+      method: 'PATCH',
     });
   }
+
 
   async exportConversation(contactId: string): Promise<Blob> {
     const response = await fetch(`${API_BASE_URL}/v1/conversations/${contactId}/export`, {

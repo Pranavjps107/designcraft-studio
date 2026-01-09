@@ -356,7 +356,7 @@ export default function Conversations() {
           <div className="w-80 bg-card border-l border-border overflow-y-auto">
             <div className="p-6 text-center border-b border-border">
               <div className="w-20 h-20 rounded-full bg-info flex items-center justify-center text-3xl font-semibold text-info-foreground mx-auto mb-4">
-                {safeInitials(selectedConversation.contact)}
+                {safeInitials(conversationDetails?.contact)}
               </div>
               <h3 className="text-xl font-bold text-foreground">
                 {selectedConversation.name || "Unknown"}
@@ -387,7 +387,7 @@ export default function Conversations() {
                   <div>
                     <p className="text-xs text-muted-foreground">Location</p>
                     <p className="text-sm font-medium text-foreground">
-                      {selectedConversation.attributes?.location || "Not available"}
+                      {conversationDetails?.contact?.attributes?.location || "Not available"}
                     </p>
                   </div>
                 </div>
@@ -398,18 +398,24 @@ export default function Conversations() {
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
                 Tags
               </p>
+
               <div className="flex flex-wrap gap-2">
-                {selectedConversation.attributes && Object.entries(selectedConversation.attributes).map(([key, value]) => (
-                  <span key={key} className="px-3 py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium">
-                    {value}
-                  </span>
-                ))}
-                {(!conversationDetails?.contact?.tags ||
-                    conversationDetails.contact.tags.length === 0) && (
-                    <span className="text-sm text-muted-foreground">No tags</span>
-                  )}
+                {conversationDetails?.contact?.tags &&
+                conversationDetails.contact.tags.length > 0 ? (
+                  conversationDetails.contact.tags.map((tag) => (
+                    <span
+                      key={tag}
+                      className="px-3 py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium"
+                    >
+                      {tag}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-sm text-muted-foreground">No tags</span>
+                )}
               </div>
             </div>
+
 
             <div className="p-6 border-b border-border">
               <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-4">
