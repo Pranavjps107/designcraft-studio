@@ -13,8 +13,7 @@ export interface User {
 }
 
 export interface AuthResponse {
-  user: User;
-  token: string;
+  access_token: string;
   refresh_token: string;
 }
 
@@ -182,17 +181,18 @@ class APIClient {
   private token: string | null = null;
 
   constructor() {
-    this.token = localStorage.getItem('auth_token');
+    this.token = localStorage.getItem('access_token');
   }
 
   setToken(token: string) {
     this.token = token;
-    localStorage.setItem('auth_token', token);
+    localStorage.setItem('access_token', token);
   }
 
   clearToken() {
     this.token = null;
-    localStorage.removeItem('auth_token');
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
   }
 
   getToken(): string | null {
@@ -250,16 +250,24 @@ class APIClient {
   // ==================== AUTH APIs ====================
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>(`${AUTH_BASE_URL}/v1/auth/login`, {
+    const response = await fetch(`${AUTH_BASE_URL}/v1/auth/login`, {
       method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
-    if (response.token) {
-      this.setToken(response.token);
+    if (!response.ok) {
+      const error = await response.json().catch(() => null);
+      throw new Error(error?.error?.message || 'Login failed');
     }
 
-    return response;
+    const data = await response.json();
+
+    // ✅ STORE TOKENS
+    this.setToken(data.access_token);
+    localStorage.setItem('refresh_token', data.refresh_token);
+
+    return data;
   }
 
   async register(data: {
