@@ -177,7 +177,7 @@ export default function Dashboard() {
                 title="Avg Response Time"
                 value={`${Math.round((overview?.average_response_time_seconds || 0) / 60)}m`}
                 change={`${overview?.average_response_time_seconds || 0}s`}
-                changeType="neutral"
+                changeType="positive"
                 icon={<Clock className="h-5 w-5 text-orange-600" />}
                 iconBg="orange"
               />
@@ -255,8 +255,10 @@ export default function Dashboard() {
               {isLoading ? (
                 <Skeleton className="h-10 w-16 mx-auto" />
               ) : (
-                <p className="text-4xl font-bold text-foreground">{credits?.email_credits || 0}</p>
-                <p className="text-xs text-muted-foreground mt-1">Message Credits Available</p>
+                <div>
+                  <p className="text-4xl font-bold text-foreground">{credits?.email_credits || 0}</p>
+                  <p className="text-xs text-muted-foreground mt-1">Message Credits Available</p>
+                </div>
               )}
             </div>
             <Button 
