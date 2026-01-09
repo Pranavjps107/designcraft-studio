@@ -129,8 +129,11 @@ export default function Conversations() {
     }
   };
 
-  const getInitials = (name: string) => {
-    return name.split(" ").map((n) => n[0]).join("").toUpperCase().slice(0, 2);
+  const safeInitials = (contact?: { initials?: string; name?: string }) => {
+    if (!contact) return "?";
+    if (contact.initials) return contact.initials;
+    if (contact.name) return contact.name.charAt(0).toUpperCase();
+    return "?";
   };
 
   const formatTime = (dateString: string) => {
@@ -197,7 +200,7 @@ export default function Conversations() {
                   )}
                 >
                   <div className="w-12 h-12 rounded-full bg-info flex-shrink-0 flex items-center justify-center text-info-foreground font-semibold">
-                    {conv.contact.initials || getInitials(conv.contact.name)}
+                    {safeInitials(conv.contact)}
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
@@ -231,7 +234,7 @@ export default function Conversations() {
               <div className="h-16 px-6 border-b border-border flex items-center justify-between bg-card">
                 <div className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-info flex items-center justify-center text-info-foreground font-semibold">
-                    {selectedConversation.contact.initials || getInitials(selectedConversation.contact.name)}
+                    {safeInitials(selectedConversation.contact)}
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
@@ -284,7 +287,7 @@ export default function Conversations() {
                               : "bg-info text-info-foreground"
                           )}
                         >
-                          {msg.direction === "outbound" ? "🤖" : getInitials(selectedConversation.contact.name)}
+                          {msg.direction === "outbound" ? "🤖" : safeInitials(selectedConversation.contact)}
                         </div>
                         <div className={cn("max-w-[60%]", msg.direction === "outbound" && "text-right")}>
                           <div
@@ -346,7 +349,7 @@ export default function Conversations() {
           <div className="w-80 bg-card border-l border-border overflow-y-auto">
             <div className="p-6 text-center border-b border-border">
               <div className="w-20 h-20 rounded-full bg-info flex items-center justify-center text-3xl font-semibold text-info-foreground mx-auto mb-4">
-                {selectedConversation.contact.initials || getInitials(selectedConversation.contact.name)}
+                {safeInitials(selectedConversation.contact)}
               </div>
               <h3 className="text-xl font-bold text-foreground">
                 {selectedConversation.contact.name}
@@ -389,7 +392,7 @@ export default function Conversations() {
                 Tags
               </p>
               <div className="flex flex-wrap gap-2">
-                {conversationDetails?.contact.tags.map((tag) => (
+                {conversationDetails?.contact.tags?.map((tag) => (
                   <span key={tag} className="px-3 py-1.5 bg-accent text-accent-foreground rounded-md text-xs font-medium">
                     {tag}
                   </span>
