@@ -1,7 +1,8 @@
+import { useEffect, useState } from "react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { KPICard } from "@/components/dashboard/KPICard";
-import { StatusBadge } from "@/components/ui/status-badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   MessageSquare,
   Users,
@@ -9,7 +10,6 @@ import {
   Clock,
   Calendar,
   ChevronDown,
-  ArrowRight,
   Plus,
   UserPlus,
   UsersRound,
@@ -24,72 +24,85 @@ import {
   CartesianGrid,
   Tooltip,
   ResponsiveContainer,
-  BarChart,
-  Bar,
 } from "recharts";
-
-const chartData = [
-  { name: "Mon", conversations: 240, users: 120 },
-  { name: "Tue", conversations: 320, users: 150 },
-  { name: "Wed", conversations: 280, users: 140 },
-  { name: "Thu", conversations: 400, users: 200 },
-  { name: "Fri", conversations: 380, users: 180 },
-  { name: "Sat", conversations: 280, users: 120 },
-  { name: "Sun", conversations: 200, users: 100 },
-];
-
-const activityData = [
-  { hour: "6am", count: 20 },
-  { hour: "9am", count: 80 },
-  { hour: "12pm", count: 120 },
-  { hour: "3pm", count: 100 },
-  { hour: "6pm", count: 60 },
-  { hour: "9pm", count: 40 },
-];
-
-const recentConversations = [
-  {
-    id: 1,
-    name: "Sarah Anderson",
-    initials: "SA",
-    message: "I need help with my recent order...",
-    status: "active" as const,
-    time: "2 min ago",
-  },
-  {
-    id: 2,
-    name: "Michael Johnson",
-    initials: "MJ",
-    message: "Thank you for the support!",
-    status: "resolved" as const,
-    time: "15 min ago",
-  },
-  {
-    id: 3,
-    name: "Emily Wilson",
-    initials: "EW",
-    message: "When will my order arrive?",
-    status: "pending" as const,
-    time: "1 hour ago",
-  },
-  {
-    id: 4,
-    name: "David Brown",
-    initials: "DB",
-    message: "Can I change my shipping address?",
-    status: "active" as const,
-    time: "2 hours ago",
-  },
-];
+import api, { DashboardOverview, CreditBalance, SendingLimits, ChartDataPoint } from "@/lib/api";
+import { toast } from "sonner";
 
 const quickActions = [
   { icon: Plus, label: "Create Campaign", href: "/campaigns/new" },
-  { icon: UserPlus, label: "Add Contact", href: "/contacts/new" },
+  { icon: UserPlus, label: "Add Contact", href: "/contacts" },
   { icon: UsersRound, label: "Create Audience", href: "/audiences/new" },
   { icon: CheckCircle, label: "Verify Emails", href: "/verify" },
 ];
 
 export default function Dashboard() {
+  const [overview, setOverview] = useState<DashboardOverview | null>(null);
+  const [credits, setCredits] = useState<CreditBalance | null>(null);
+  const [limits, setLimits] = useState<SendingLimits | null>(null);
+  const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
+  const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
+  const [recentEmails, setRecentEmails] = useState<any[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [period, setPeriod] = useState("7d");
+
+  useEffect(() => {
+    loadDashboardData();
+  }, [period]);
+
+  const loadDashboardData = async () => {
+    setIsLoading(true);
+    try {
+      const [overviewData, creditsData, limitsData, chartResponse, campaignsData, emailsData] = await Promise.all([
+        api.getDashboardOverview().catch(() => null),
+        api.getCreditBalance().catch(() => null),
+        api.getSendingLimits().catch(() => null),
+        api.getChartData(period).catch(() => ({ daily_volume: [] })),
+        api.getRecentCampaigns(5).catch(() => ({ campaigns: [], total: 0 })),
+        api.getRecentEmails(5).catch(() => ({ emails: [], total: 0 })),
+      ]);
+
+      setOverview(overviewData);
+      setCredits(creditsData);
+      setLimits(limitsData);
+      setChartData(chartResponse.daily_volume);
+      setRecentCampaigns(campaignsData.campaigns);
+      setRecentEmails(emailsData.emails);
+    } catch (error) {
+      toast.error("Failed to load dashboard data");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleTopUp = async () => {
+    try {
+      await api.topUpCredits(10000);
+      toast.success("Credits topped up successfully!");
+      loadDashboardData();
+    } catch (error: any) {
+      toast.error(error.message || "Failed to top up credits");
+    }
+  };
+
+  const formatChartData = () => {
+    if (chartData.length === 0) {
+      return [
+        { name: "Mon", conversations: 0 },
+        { name: "Tue", conversations: 0 },
+        { name: "Wed", conversations: 0 },
+        { name: "Thu", conversations: 0 },
+        { name: "Fri", conversations: 0 },
+        { name: "Sat", conversations: 0 },
+        { name: "Sun", conversations: 0 },
+      ];
+    }
+    return chartData.map((d) => ({
+      name: new Date(d.date).toLocaleDateString('en-US', { weekday: 'short' }),
+      conversations: d.sent,
+      bounced: d.bounced,
+    }));
+  };
+
   return (
     <DashboardLayout>
       <div className="p-8">
@@ -105,7 +118,7 @@ export default function Dashboard() {
           </div>
           <Button variant="outline" className="gap-2">
             <Calendar className="h-4 w-4" />
-            Last 7 days
+            Last {period === "7d" ? "7" : period === "30d" ? "30" : "90"} days
             <ChevronDown className="h-4 w-4" />
           </Button>
         </div>
@@ -126,38 +139,50 @@ export default function Dashboard() {
 
         {/* KPI Grid */}
         <div className="grid grid-cols-4 gap-6 mb-8">
-          <KPICard
-            title="Total Conversations"
-            value="2,847"
-            change="12.5%"
-            changeType="positive"
-            icon={<MessageSquare className="h-5 w-5 text-primary" />}
-            iconBg="green"
-          />
-          <KPICard
-            title="Active Users"
-            value="1,284"
-            change="8.2%"
-            changeType="positive"
-            icon={<Users className="h-5 w-5 text-info" />}
-            iconBg="blue"
-          />
-          <KPICard
-            title="Response Rate"
-            value="94.2%"
-            change="2.1%"
-            changeType="positive"
-            icon={<Zap className="h-5 w-5 text-purple-600" />}
-            iconBg="purple"
-          />
-          <KPICard
-            title="Avg Response Time"
-            value="2.4m"
-            change="15.3%"
-            changeType="negative"
-            icon={<Clock className="h-5 w-5 text-orange-600" />}
-            iconBg="orange"
-          />
+          {isLoading ? (
+            Array(4).fill(0).map((_, i) => (
+              <div key={i} className="bg-card rounded-xl p-5 border border-border">
+                <Skeleton className="h-4 w-24 mb-3" />
+                <Skeleton className="h-8 w-16 mb-2" />
+                <Skeleton className="h-4 w-20" />
+              </div>
+            ))
+          ) : (
+            <>
+              <KPICard
+                title="Total Conversations"
+                value={overview?.total_conversations.value.toLocaleString() || "0"}
+                change={`${overview?.total_conversations.change || 0}%`}
+                changeType={overview?.total_conversations.trend === "up" ? "positive" : "negative"}
+                icon={<MessageSquare className="h-5 w-5 text-primary" />}
+                iconBg="green"
+              />
+              <KPICard
+                title="Active Users"
+                value={overview?.active_users.value.toLocaleString() || "0"}
+                change={`${overview?.active_users.change || 0}%`}
+                changeType={overview?.active_users.trend === "up" ? "positive" : "negative"}
+                icon={<Users className="h-5 w-5 text-info" />}
+                iconBg="blue"
+              />
+              <KPICard
+                title="Response Rate"
+                value={`${overview?.response_rate.value || 0}%`}
+                change={`${overview?.response_rate.change || 0}%`}
+                changeType={overview?.response_rate.trend === "up" ? "positive" : "negative"}
+                icon={<Zap className="h-5 w-5 text-purple-600" />}
+                iconBg="purple"
+              />
+              <KPICard
+                title="Avg Response Time"
+                value={overview?.avg_response_time.value || "0m"}
+                change={`${overview?.avg_response_time.change || 0}%`}
+                changeType={overview?.avg_response_time.trend === "down" ? "positive" : "negative"}
+                icon={<Clock className="h-5 w-5 text-orange-600" />}
+                iconBg="orange"
+              />
+            </>
+          )}
         </div>
 
         {/* Charts Grid */}
@@ -169,17 +194,19 @@ export default function Dashboard() {
                 <h3 className="text-lg font-semibold text-foreground">
                   Daily Email Volume
                 </h3>
-                <p className="text-sm text-muted-foreground">0 Emails sent in last 7 days</p>
+                <p className="text-sm text-muted-foreground">
+                  {chartData.reduce((sum, d) => sum + d.sent, 0)} Emails sent in last {period === "7d" ? "7" : period === "30d" ? "30" : "90"} days
+                </p>
               </div>
               <div className="flex gap-2">
-                <Button variant="default" size="sm">7D</Button>
-                <Button variant="outline" size="sm">30D</Button>
-                <Button variant="outline" size="sm">90D</Button>
+                <Button variant={period === "7d" ? "default" : "outline"} size="sm" onClick={() => setPeriod("7d")}>7D</Button>
+                <Button variant={period === "30d" ? "default" : "outline"} size="sm" onClick={() => setPeriod("30d")}>30D</Button>
+                <Button variant={period === "90d" ? "default" : "outline"} size="sm" onClick={() => setPeriod("90d")}>90D</Button>
               </div>
             </div>
             <div className="h-72">
               <ResponsiveContainer width="100%" height="100%">
-                <AreaChart data={chartData}>
+                <AreaChart data={formatChartData()}>
                   <defs>
                     <linearGradient id="colorConversations" x1="0" y1="0" x2="0" y2="1">
                       <stop offset="5%" stopColor="hsl(var(--primary))" stopOpacity={0.3} />
@@ -225,24 +252,32 @@ export default function Dashboard() {
             </h3>
             <div className="text-center mb-6">
               <p className="text-sm text-muted-foreground">Email Credits</p>
-              <p className="text-4xl font-bold text-foreground">0</p>
+              {isLoading ? (
+                <Skeleton className="h-10 w-16 mx-auto" />
+              ) : (
+                <p className="text-4xl font-bold text-foreground">{credits?.email_credits || 0}</p>
+              )}
             </div>
-            <Button variant="outline" className="w-full mb-6 text-primary border-primary hover:bg-primary/10">
+            <Button 
+              variant="outline" 
+              className="w-full mb-6 text-primary border-primary hover:bg-primary/10"
+              onClick={handleTopUp}
+            >
               ⚡ Top up
             </Button>
             <div className="space-y-4">
               <p className="text-sm font-medium text-muted-foreground">Sending pricing</p>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">SMTP/API</span>
-                <span className="text-foreground">1 credit/email</span>
+                <span className="text-foreground">{credits?.pricing.smtp_api || 1} credit/email</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Campaigns</span>
-                <span className="text-foreground">2 credits/email</span>
+                <span className="text-foreground">{credits?.pricing.campaigns || 2} credits/email</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Verifications</span>
-                <span className="text-foreground">5 credits/email</span>
+                <span className="text-foreground">{credits?.pricing.verifications || 5} credits/email</span>
               </div>
             </div>
           </div>
@@ -261,9 +296,20 @@ export default function Dashboard() {
                 View All
               </Link>
             </div>
-            <div className="p-8 text-center text-muted-foreground">
-              No recent campaigns
-            </div>
+            {recentCampaigns.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                No recent campaigns
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {recentCampaigns.map((campaign) => (
+                  <div key={campaign.id} className="p-4">
+                    <p className="font-medium text-foreground">{campaign.name}</p>
+                    <p className="text-sm text-muted-foreground">{campaign.status}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Recent Emails */}
@@ -277,9 +323,20 @@ export default function Dashboard() {
                 View All
               </Link>
             </div>
-            <div className="p-8 text-center text-muted-foreground">
-              No recent emails
-            </div>
+            {recentEmails.length === 0 ? (
+              <div className="p-8 text-center text-muted-foreground">
+                No recent emails
+              </div>
+            ) : (
+              <div className="divide-y divide-border">
+                {recentEmails.map((email) => (
+                  <div key={email.id} className="p-4">
+                    <p className="font-medium text-foreground truncate">{email.subject}</p>
+                    <p className="text-sm text-muted-foreground">{email.recipient}</p>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Sending Limits */}
@@ -300,8 +357,14 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">Maximum sending rate</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-foreground">2</p>
-                  <p className="text-xs text-muted-foreground">per second</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-8" />
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-foreground">{limits?.emails_per_second || 2}</p>
+                      <p className="text-xs text-muted-foreground">per second</p>
+                    </>
+                  )}
                 </div>
               </div>
               <div className="flex justify-between items-center">
@@ -310,12 +373,18 @@ export default function Dashboard() {
                   <p className="text-sm text-muted-foreground">Daily quota limit</p>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-foreground">5,000</p>
-                  <p className="text-xs text-muted-foreground">per day</p>
+                  {isLoading ? (
+                    <Skeleton className="h-8 w-12" />
+                  ) : (
+                    <>
+                      <p className="text-2xl font-bold text-foreground">{limits?.emails_per_day?.toLocaleString() || "5,000"}</p>
+                      <p className="text-xs text-muted-foreground">per day</p>
+                    </>
+                  )}
                 </div>
               </div>
               <p className="text-sm text-muted-foreground">
-                0 sent today • 5,000 remaining
+                {limits?.sent_today || 0} sent today • {limits?.remaining?.toLocaleString() || "5,000"} remaining
               </p>
             </div>
           </div>

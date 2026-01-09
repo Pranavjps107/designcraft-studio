@@ -1,13 +1,54 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
-import { Mail, Eye, EyeOff } from "lucide-react";
+import { Link, useNavigate } from "react-router-dom";
+import { Mail, Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Checkbox } from "@/components/ui/checkbox";
+import { toast } from "sonner";
+import api from "@/lib/api";
 
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const [rememberMe, setRememberMe] = useState(false);
+  const navigate = useNavigate();
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!email || !password) {
+      toast.error("Please fill in all fields");
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await api.login(email, password);
+      toast.success("Login successful!");
+      navigate("/dashboard");
+    } catch (error: any) {
+      toast.error(error.message || "Invalid email or password");
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleForgotPassword = async () => {
+    if (!email) {
+      toast.error("Please enter your email address first");
+      return;
+    }
+
+    try {
+      await api.forgotPassword(email);
+      toast.success("Password reset email sent!");
+    } catch (error: any) {
+      toast.error(error.message || "Failed to send reset email");
+    }
+  };
 
   return (
     <div className="min-h-screen flex">
@@ -51,7 +92,7 @@ export default function Login() {
             </p>
           </div>
 
-          <form className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-6">
             <div className="space-y-2">
               <Label htmlFor="email">Email address</Label>
               <Input
@@ -59,6 +100,9 @@ export default function Login() {
                 type="email"
                 placeholder="you@company.com"
                 className="h-12"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                disabled={isLoading}
               />
             </div>
 
@@ -70,6 +114,9 @@ export default function Login() {
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
                   className="h-12 pr-10"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  disabled={isLoading}
                 />
                 <button
                   type="button"
@@ -87,21 +134,33 @@ export default function Login() {
 
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
-                <Checkbox id="remember" />
+                <Checkbox 
+                  id="remember" 
+                  checked={rememberMe}
+                  onCheckedChange={(checked) => setRememberMe(!!checked)}
+                />
                 <Label htmlFor="remember" className="text-sm cursor-pointer">
                   Remember me
                 </Label>
               </div>
-              <Link
-                to="/forgot-password"
+              <button
+                type="button"
+                onClick={handleForgotPassword}
                 className="text-sm font-medium text-primary hover:underline"
               >
                 Forgot password?
-              </Link>
+              </button>
             </div>
 
-            <Button asChild className="w-full h-12 text-base">
-              <Link to="/dashboard">Sign in</Link>
+            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Signing in...
+                </>
+              ) : (
+                "Sign in"
+              )}
             </Button>
 
             <div className="relative">
@@ -113,7 +172,7 @@ export default function Login() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full h-12 text-base gap-3">
+            <Button variant="outline" className="w-full h-12 text-base gap-3" type="button">
               <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z"
