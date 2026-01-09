@@ -363,6 +363,10 @@ class APIClient {
     return this.request(`${API_BASE_URL}/v1/conversations?${params}`);
   }
 
+  async getConversationDetail(contactId: string): Promise<Conversation> {
+    return this.request(`${API_BASE_URL}/v1/conversations/${contactId}`);
+  }
+
   async getMessages(contactId: string, limit: number = 50): Promise<ConversationMessages> {
     return this.request(`${API_BASE_URL}/v1/conversations/${contactId}/messages?limit=${limit}`);
   }

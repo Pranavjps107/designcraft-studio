@@ -32,7 +32,7 @@ const quickActions = [
   { icon: Plus, label: "Create Campaign", href: "/campaigns/new" },
   { icon: UserPlus, label: "Add Contact", href: "/contacts" },
   { icon: UsersRound, label: "Create Audience", href: "/audiences/new" },
-  { icon: CheckCircle, label: "Verify Emails", href: "/verify" },
+  { icon: CheckCircle, label: "Send Message", href: "/verify" },
 ];
 
 export default function Dashboard() {
@@ -41,7 +41,7 @@ export default function Dashboard() {
   const [limits, setLimits] = useState<SendingLimits | null>(null);
   const [chartData, setChartData] = useState<ChartDataPoint[]>([]);
   const [recentCampaigns, setRecentCampaigns] = useState<any[]>([]);
-  const [recentEmails, setRecentEmails] = useState<any[]>([]);
+  const [recentMessages, setRecentMessages] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [period, setPeriod] = useState("7d");
 
@@ -52,7 +52,7 @@ export default function Dashboard() {
   const loadDashboardData = async () => {
     setIsLoading(true);
     try {
-      const [overviewData, creditsData, limitsData, chartResponse, campaignsData, emailsData] = await Promise.all([
+      const [overviewData, creditsData, limitsData, chartResponse, campaignsData, messagesData] = await Promise.all([
         api.getAnalyticsOverview(period).catch(() => null),
         api.getCreditBalance().catch(() => null),
         api.getSendingLimits().catch(() => null),
@@ -66,7 +66,7 @@ export default function Dashboard() {
       setLimits(limitsData);
       setChartData(chartResponse.daily_volume);
       setRecentCampaigns(campaignsData.campaigns);
-      setRecentEmails(emailsData.emails);
+      setRecentMessages(messagesData.emails);
     } catch (error) {
       toast.error("Failed to load dashboard data");
     } finally {
@@ -192,10 +192,10 @@ export default function Dashboard() {
             <div className="flex justify-between items-center mb-6">
               <div>
                 <h3 className="text-lg font-semibold text-foreground">
-                  Daily Email Volume
+                  Daily Message Volume
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {chartData.reduce((sum, d) => sum + d.sent, 0)} Emails sent in last {period === "7d" ? "7" : period === "30d" ? "30" : "90"} days
+                  {chartData.reduce((sum, d) => sum + d.sent, 0)} Messages sent in last {period === "7d" ? "7" : period === "30d" ? "30" : "90"} days
                 </p>
               </div>
               <div className="flex gap-2">
@@ -251,11 +251,12 @@ export default function Dashboard() {
               Credits & Pricing
             </h3>
             <div className="text-center mb-6">
-              <p className="text-sm text-muted-foreground">Email Credits</p>
+              <p className="text-sm text-muted-foreground">Message Credits</p>
               {isLoading ? (
                 <Skeleton className="h-10 w-16 mx-auto" />
               ) : (
                 <p className="text-4xl font-bold text-foreground">{credits?.email_credits || 0}</p>
+                <p className="text-xs text-muted-foreground mt-1">Message Credits Available</p>
               )}
             </div>
             <Button 
@@ -269,15 +270,15 @@ export default function Dashboard() {
               <p className="text-sm font-medium text-muted-foreground">Sending pricing</p>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">SMTP/API</span>
-                <span className="text-foreground">{credits?.pricing.smtp_api || 1} credit/email</span>
+                <span className="text-foreground">{credits?.pricing.smtp_api || 1} credit/message</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Campaigns</span>
-                <span className="text-foreground">{credits?.pricing.campaigns || 2} credits/email</span>
+                <span className="text-foreground">{credits?.pricing.campaigns || 2} credits/message</span>
               </div>
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">Verifications</span>
-                <span className="text-foreground">{credits?.pricing.verifications || 5} credits/email</span>
+                <span className="text-foreground">{credits?.pricing.verifications || 5} credits/message</span>
               </div>
             </div>
           </div>
@@ -312,27 +313,27 @@ export default function Dashboard() {
             )}
           </div>
 
-          {/* Recent Emails */}
+          {/* Recent Messages */}
           <div className="bg-card rounded-xl border border-border overflow-hidden">
             <div className="flex justify-between items-center p-5 border-b border-border">
-              <h3 className="font-semibold text-foreground">Recent Emails</h3>
+              <h3 className="font-semibold text-foreground">Recent Messages</h3>
               <Link
-                to="/emails"
+                to="/messages"
                 className="text-sm font-medium text-primary hover:underline"
               >
                 View All
               </Link>
             </div>
-            {recentEmails.length === 0 ? (
+            {recentMessages.length === 0 ? (
               <div className="p-8 text-center text-muted-foreground">
-                No recent emails
+                No recent messages
               </div>
             ) : (
               <div className="divide-y divide-border">
-                {recentEmails.map((email) => (
-                  <div key={email.id} className="p-4">
-                    <p className="font-medium text-foreground truncate">{email.subject}</p>
-                    <p className="text-sm text-muted-foreground">{email.recipient}</p>
+                {recentMessages.map((message) => (
+                  <div key={message.id} className="p-4">
+                    <p className="font-medium text-foreground truncate">{message.subject || message.recipient}</p>
+                    <p className="text-sm text-muted-foreground">{message.status}</p>
                   </div>
                 ))}
               </div>
@@ -353,7 +354,7 @@ export default function Dashboard() {
             <div className="space-y-6">
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-foreground">Emails per Second</p>
+                  <p className="font-medium text-foreground">Messages per Second</p>
                   <p className="text-sm text-muted-foreground">Maximum sending rate</p>
                 </div>
                 <div className="text-right">
@@ -362,6 +363,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <p className="text-2xl font-bold text-foreground">{limits?.emails_per_second || 2}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Messages/sec</p>
                       <p className="text-xs text-muted-foreground">per second</p>
                     </>
                   )}
@@ -369,7 +371,7 @@ export default function Dashboard() {
               </div>
               <div className="flex justify-between items-center">
                 <div>
-                  <p className="font-medium text-foreground">Emails per Day</p>
+                  <p className="font-medium text-foreground">Messages per Day</p>
                   <p className="text-sm text-muted-foreground">Daily quota limit</p>
                 </div>
                 <div className="text-right">
@@ -378,6 +380,7 @@ export default function Dashboard() {
                   ) : (
                     <>
                       <p className="text-2xl font-bold text-foreground">{limits?.emails_per_day?.toLocaleString() || "5,000"}</p>
+                      <p className="text-xs text-muted-foreground mt-1">Messages/day</p>
                       <p className="text-xs text-muted-foreground">per day</p>
                     </>
                   )}

@@ -67,9 +67,14 @@ export default function Conversations() {
   const loadMessages = async (contactId: string) => {
     setIsLoadingMessages(true);
     try {
-      const data = await api.getMessages(contactId);
-      setMessages(data.messages);
-      setConversationDetails(data);
+      // Fetch both conversation details and messages in parallel
+      const [detailData, messagesData] = await Promise.all([
+        api.getConversationDetail(contactId),
+        api.getMessages(contactId),
+      ]);
+      
+      setMessages(messagesData.messages);
+      setConversationDetails(messagesData);
     } catch (error) {
       toast.error("Failed to load messages");
     } finally {
