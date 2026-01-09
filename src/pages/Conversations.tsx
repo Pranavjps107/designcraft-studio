@@ -110,7 +110,7 @@ export default function Conversations() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `conversation-${selectedConversation.contact.name}.csv`;
+      a.download = `conversation-${selectedConversation.contact?.name || "export"}.csv`;
       a.click();
       URL.revokeObjectURL(url);
     } catch (error) {
@@ -188,7 +188,9 @@ export default function Conversations() {
                 No conversations found
               </div>
             ) : (
-              conversations.map((conv) => (
+              conversations
+                .filter((conv) => conv.contact)
+                .map((conv) => (
                 <div
                   key={conv.id}
                   onClick={() => setSelectedConversation(conv)}
@@ -205,7 +207,7 @@ export default function Conversations() {
                   <div className="flex-1 min-w-0">
                     <div className="flex justify-between items-center mb-1">
                       <span className="font-semibold text-foreground truncate">
-                        {conv.contact.name}
+                        {conv.contact?.name || "Unknown"}
                       </span>
                       <span className="text-xs text-muted-foreground">
                         {new Date(conv.last_message_at).toLocaleDateString()}
@@ -238,12 +240,12 @@ export default function Conversations() {
                   </div>
                   <div>
                     <h3 className="font-semibold text-foreground">
-                      {selectedConversation.contact.name}
+                      {selectedConversation.contact?.name || "Unknown"}
                     </h3>
                     <p className="text-sm text-muted-foreground">
-                      <span className={selectedConversation.contact.is_online ? "text-primary" : "text-muted-foreground"}>
-                        ● {selectedConversation.contact.is_online ? "Online" : "Offline"}
-                      </span> • {selectedConversation.contact.phone}
+                      <span className={selectedConversation.contact?.is_online ? "text-primary" : "text-muted-foreground"}>
+                        ● {selectedConversation.contact?.is_online ? "Online" : "Offline"}
+                      </span> • {selectedConversation.contact?.phone || "N/A"}
                     </p>
                   </div>
                 </div>
@@ -345,16 +347,16 @@ export default function Conversations() {
         </div>
 
         {/* Contact Details */}
-        {selectedConversation && (
+        {selectedConversation && selectedConversation.contact && (
           <div className="w-80 bg-card border-l border-border overflow-y-auto">
             <div className="p-6 text-center border-b border-border">
               <div className="w-20 h-20 rounded-full bg-info flex items-center justify-center text-3xl font-semibold text-info-foreground mx-auto mb-4">
                 {safeInitials(selectedConversation.contact)}
               </div>
               <h3 className="text-xl font-bold text-foreground">
-                {selectedConversation.contact.name}
+                {selectedConversation.contact?.name || "Unknown"}
               </h3>
-              <p className="text-muted-foreground">{selectedConversation.contact.phone}</p>
+              <p className="text-muted-foreground">{selectedConversation.contact?.phone || "N/A"}</p>
             </div>
 
             <div className="p-6 border-b border-border">
@@ -397,7 +399,7 @@ export default function Conversations() {
                     {tag}
                   </span>
                 ))}
-                {(!conversationDetails?.contact.tags || conversationDetails.contact.tags.length === 0) && (
+                {(!conversationDetails?.contact.tags || (Array.isArray(conversationDetails.contact.tags) && conversationDetails.contact.tags.length === 0)) && (
                   <span className="text-sm text-muted-foreground">No tags</span>
                 )}
               </div>
