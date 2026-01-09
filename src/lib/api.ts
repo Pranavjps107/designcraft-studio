@@ -328,10 +328,6 @@ class APIClient {
     return this.request(`${API_BASE_URL}/v1/billing/credits`);
   }
 
-  async getRecentCampaigns(limit: number = 5): Promise<{ campaigns: any[]; total: number }> {
-    return this.request(`${API_BASE_URL}/v1/campaigns?limit=${limit}&recent=true`);
-  }
-
   async getRecentEmails(limit: number = 5): Promise<{ emails: any[]; total: number }> {
     return this.request(`${API_BASE_URL}/v1/messages/recent?limit=${limit}`);
   }
