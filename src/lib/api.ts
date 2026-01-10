@@ -492,23 +492,23 @@ class APIClient {
     processing_count: number;
     total: number;
   }> {
-    return this.request(`${AI_BASE_URL}/v1/kb/documents?view=${view}&status=${status}`);
+    return this.request(`${API_BASE_URL}/v1/kb/documents?view=${view}&status=${status}`);
   }
 
   async uploadDocument(file: File): Promise<{ id: string; filename: string; status: string; message: string }> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.requestFormData(`${AI_BASE_URL}/v1/kb/documents`, formData);
+    return this.requestFormData(`${API_BASE_URL}/v1/kb/documents`, formData);
   }
 
   async deleteDocument(documentId: string): Promise<{ success: boolean }> {
-    return this.request(`${AI_BASE_URL}/v1/kb/documents/${documentId}`, {
+    return this.request(`${API_BASE_URL}/v1/kb/documents/${documentId}`, {
       method: 'DELETE',
     });
   }
 
   async downloadDocument(documentId: string): Promise<Blob> {
-    const response = await fetch(`${AI_BASE_URL}/v1/kb/documents/${documentId}/download`, {
+    const response = await fetch(`${API_BASE_URL}/v1/kb/documents/${documentId}/download`, {
       headers: {
         Authorization: `Bearer ${this.token}`,
       },
@@ -517,7 +517,7 @@ class APIClient {
   }
 
   async addTextSnippet(title: string, content: string): Promise<{ id: string; title: string; status: string; created_at: string }> {
-    return this.request(`${AI_BASE_URL}/v1/kb/text`, {
+    return this.request(`${API_BASE_URL}/v1/kb/text`, {
       method: 'POST',
       body: JSON.stringify({ title, content }),
     });
