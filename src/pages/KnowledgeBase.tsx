@@ -4,8 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { StatusBadge } from "@/components/ui/status-badge";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
-import { Upload, Download, Trash2, Grid, List, Loader2 } from "lucide-react";
+import { Upload, Download, Trash2, Grid, List, Loader2, FileText } from "lucide-react";
 import api, { Document } from "@/lib/api";
 import { toast } from "sonner";
 
@@ -26,6 +29,8 @@ export default function KnowledgeBase() {
   const [total, setTotal] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [textTitle, setTextTitle] = useState("");
+  const [textContent, setTextContent] = useState("");
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => { loadDocuments(); }, [viewMode]);
@@ -53,6 +58,22 @@ export default function KnowledgeBase() {
     finally { setIsUploading(false); }
   };
 
+  const handleTextUpload = async () => {
+    if (!textContent.trim()) {
+      toast.error("Please enter some text content");
+      return;
+    }
+    setIsUploading(true);
+    try {
+      await api.addTextSnippet(textTitle || "Untitled", textContent);
+      toast.success("Text snippet added successfully");
+      setTextTitle("");
+      setTextContent("");
+      loadDocuments();
+    } catch (error: any) { toast.error(error.message || "Failed to add text snippet"); }
+    finally { setIsUploading(false); }
+  };
+
   const handleDelete = async (id: string) => {
     try {
       await api.deleteDocument(id);
@@ -76,22 +97,58 @@ export default function KnowledgeBase() {
       <div className="p-8">
         <div className="flex justify-between items-center mb-8">
           <h1 className="text-3xl font-bold text-foreground">Knowledge Base</h1>
-          <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.docx,.txt" onChange={handleUpload} />
-          <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
-            {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Document
-          </Button>
+          {activeTab === "Documents" ? (
+            <>
+              <input type="file" ref={fileInputRef} className="hidden" accept=".pdf,.docx,.txt" onChange={handleUpload} />
+              <Button className="gap-2" onClick={() => fileInputRef.current?.click()} disabled={isUploading}>
+                {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <Upload className="h-4 w-4" />} Upload Document
+              </Button>
+            </>
+          ) : (
+            <Button className="gap-2" onClick={handleTextUpload} disabled={isUploading || !textContent.trim()}>
+              {isUploading ? <Loader2 className="h-4 w-4 animate-spin" /> : <FileText className="h-4 w-4" />} Add Text Snippet
+            </Button>
+          )}
         </div>
 
         <div className="flex gap-2 mb-8 border-b border-border">
           {tabs.map((tab) => (<button key={tab} onClick={() => setActiveTab(tab)} className={cn("px-5 py-3 text-sm font-medium border-b-2 -mb-px transition-colors", activeTab === tab ? "border-primary text-primary" : "border-transparent text-muted-foreground hover:text-foreground")}>{tab}</button>))}
         </div>
 
-        <div className="border-2 border-dashed border-border rounded-xl p-12 text-center mb-8 hover:border-primary hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
-          <div className="text-5xl mb-4">📄</div>
-          <h3 className="text-lg font-semibold text-foreground mb-2">Drag & Drop Files Here</h3>
-          <p className="text-muted-foreground mb-1">or click to browse</p>
-          <p className="text-xs text-muted-foreground">Supported formats: PDF, DOCX, TXT | Max size: 10MB per file</p>
-        </div>
+        {activeTab === "Documents" ? (
+          <div className="border-2 border-dashed border-border rounded-xl p-12 text-center mb-8 hover:border-primary hover:bg-accent/50 transition-colors cursor-pointer" onClick={() => fileInputRef.current?.click()}>
+            <div className="text-5xl mb-4">📄</div>
+            <h3 className="text-lg font-semibold text-foreground mb-2">Drag & Drop Files Here</h3>
+            <p className="text-muted-foreground mb-1">or click to browse</p>
+            <p className="text-xs text-muted-foreground">Supported formats: PDF, DOCX, TXT | Max size: 10MB per file</p>
+          </div>
+        ) : (
+          <div className="border border-border rounded-xl p-6 mb-8 bg-card">
+            <div className="space-y-4">
+              <div>
+                <Label htmlFor="text-title" className="text-sm font-medium">Title (Optional)</Label>
+                <Input
+                  id="text-title"
+                  placeholder="Enter a title for your text snippet..."
+                  value={textTitle}
+                  onChange={(e) => setTextTitle(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label htmlFor="text-content" className="text-sm font-medium">Text Content</Label>
+                <Textarea
+                  id="text-content"
+                  placeholder="Enter your text content here..."
+                  value={textContent}
+                  onChange={(e) => setTextContent(e.target.value)}
+                  rows={8}
+                  className="mt-1 resize-none"
+                />
+              </div>
+            </div>
+          </div>
+        )}
 
         {processingCount > 0 && (
           <div className="bg-card rounded-xl p-6 border border-border mb-8">
@@ -104,7 +161,9 @@ export default function KnowledgeBase() {
         )}
 
         <div className="flex justify-between items-center mb-6">
-          <p className="font-semibold text-foreground">All Documents ({documents.length})</p>
+          <p className="font-semibold text-foreground">
+            {activeTab === "Documents" ? `All Documents (${documents.length})` : `All Text Snippets (${documents.length})`}
+          </p>
           <div className="flex gap-2">
             <Button variant={viewMode === "grid" ? "default" : "outline"} size="sm" onClick={() => setViewMode("grid")} className="gap-2"><Grid className="h-4 w-4" /> Grid</Button>
             <Button variant={viewMode === "list" ? "default" : "outline"} size="sm" onClick={() => setViewMode("list")} className="gap-2"><List className="h-4 w-4" /> List</Button>
@@ -114,7 +173,9 @@ export default function KnowledgeBase() {
         {isLoading ? (
           <div className="grid grid-cols-4 gap-5">{Array(4).fill(0).map((_, i) => (<div key={i} className="bg-card rounded-xl p-5 border border-border"><Skeleton className="w-14 h-14 rounded-xl mb-4" /><Skeleton className="h-4 w-full mb-2" /><Skeleton className="h-3 w-24" /></div>))}</div>
         ) : documents.length === 0 ? (
-          <div className="text-center py-12 text-muted-foreground">No documents yet. Upload your first document!</div>
+          <div className="text-center py-12 text-muted-foreground">
+            {activeTab === "Documents" ? "No documents yet. Upload your first document!" : "No text snippets yet. Add your first text snippet!"}
+          </div>
         ) : viewMode === "grid" ? (
           <div className="grid grid-cols-4 gap-5">
             {documents.map((doc) => {
