@@ -7,17 +7,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { cn } from "@/lib/utils";
+import { cn, safeString } from "@/lib/utils";
 import { Upload, Download, Trash2, Grid, List, Loader2, FileText } from "lucide-react";
 import api, { Document } from "@/lib/api";
 import { toast } from "sonner";
 
 const tabs = ["Documents", "Text Snippets"];
 
-const getDocIcon = (type: string) => {
-  if (type.includes("pdf")) return { icon: "📕", bg: "bg-red-100" };
-  if (type.includes("word") || type.includes("docx")) return { icon: "📘", bg: "bg-blue-100" };
-  if (type.includes("text")) return { icon: "📙", bg: "bg-purple-100" };
+const getDocIcon = (type?: string) => {
+  const safeType = safeString(type).toLowerCase();
+  if (safeType.includes("pdf")) return { icon: "📕", bg: "bg-red-100" };
+  if (safeType.includes("word") || safeType.includes("docx")) return { icon: "📘", bg: "bg-blue-100" };
+  if (safeType.includes("text")) return { icon: "📙", bg: "bg-purple-100" };
   return { icon: "📄", bg: "bg-muted" };
 };
 
@@ -39,9 +40,9 @@ export default function KnowledgeBase() {
     setIsLoading(true);
     try {
       const data = await api.getDocuments(viewMode);
-      setDocuments(data.documents);
-      setProcessingCount(data.processing_count);
-      setTotal(data.total);
+      setDocuments(data.documents ?? []);
+      setProcessingCount(data.processing_count ?? 0);
+      setTotal(data.total ?? 0);
     } catch (error) { toast.error("Failed to load documents"); }
     finally { setIsLoading(false); }
   };
@@ -84,11 +85,8 @@ export default function KnowledgeBase() {
 
   const handleDownload = async (id: string, filename: string) => {
     try {
-      const blob = await api.downloadDocument(id);
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url; a.download = filename; a.click();
-      URL.revokeObjectURL(url);
+      const response = await api.downloadDocument(id);
+      window.open(response.download_url, '_blank');
     } catch (error) { toast.error("Failed to download document"); }
   };
 
@@ -184,7 +182,7 @@ export default function KnowledgeBase() {
                 <div key={doc.id} className="bg-card rounded-xl p-5 border border-border hover:shadow-md hover:-translate-y-0.5 transition-all cursor-pointer">
                   <div className={cn("w-14 h-14 rounded-xl flex items-center justify-center text-2xl mb-4", bg)}>{icon}</div>
                   <h4 className="font-semibold text-foreground truncate mb-2">{doc.filename}</h4>
-                  <p className="text-xs text-muted-foreground mb-3">{new Date(doc.uploaded_at).toLocaleDateString()} • {doc.size}</p>
+                  <p className="text-xs text-muted-foreground mb-3">{new Date(doc.uploaded_at).toLocaleDateString()}</p>
                   <div className="flex justify-between items-center">
                     <StatusBadge status={doc.status}>{doc.status === "ready" && "✓ Ready"}{doc.status === "processing" && "⏳ Processing"}{doc.status === "failed" && "✕ Failed"}</StatusBadge>
                     <div className="flex gap-1">
@@ -198,8 +196,8 @@ export default function KnowledgeBase() {
           </div>
         ) : (
           <div className="bg-card rounded-xl border border-border overflow-hidden">
-            <table className="w-full"><thead><tr className="bg-muted/50"><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Document</th><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Size</th><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Date</th><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Status</th><th className="w-24 px-6 py-4"></th></tr></thead>
-            <tbody>{documents.map((doc) => { const { icon } = getDocIcon(doc.content_type); return (<tr key={doc.id} className="border-t border-border hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="text-xl">{icon}</span><span className="font-medium text-foreground">{doc.filename}</span></div></td><td className="px-6 py-4 text-muted-foreground">{doc.size}</td><td className="px-6 py-4 text-muted-foreground">{new Date(doc.uploaded_at).toLocaleDateString()}</td><td className="px-6 py-4"><StatusBadge status={doc.status}>{doc.status === "ready" && "✓ Ready"}{doc.status === "processing" && "⏳ Processing"}{doc.status === "failed" && "✕ Failed"}</StatusBadge></td><td className="px-6 py-4"><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc.id, doc.filename)}><Download className="h-4 w-4" /></Button><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(doc.id)}><Trash2 className="h-4 w-4" /></Button></div></td></tr>); })}</tbody></table>
+            <table className="w-full"><thead><tr className="bg-muted/50"><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Document</th><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Date</th><th className="text-left px-6 py-4 text-xs font-semibold text-muted-foreground uppercase">Status</th><th className="w-24 px-6 py-4"></th></tr></thead>
+            <tbody>{documents.map((doc) => { const { icon } = getDocIcon(doc.content_type); return (<tr key={doc.id} className="border-t border-border hover:bg-muted/30"><td className="px-6 py-4"><div className="flex items-center gap-3"><span className="text-xl">{icon}</span><span className="font-medium text-foreground">{doc.filename}</span></div></td><td className="px-6 py-4 text-muted-foreground">{new Date(doc.uploaded_at).toLocaleDateString()}</td><td className="px-6 py-4"><StatusBadge status={doc.status}>{doc.status === "ready" && "✓ Ready"}{doc.status === "processing" && "⏳ Processing"}{doc.status === "failed" && "✕ Failed"}</StatusBadge></td><td className="px-6 py-4"><div className="flex gap-1"><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDownload(doc.id, doc.filename)}><Download className="h-4 w-4" /></Button><Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleDelete(doc.id)}><Trash2 className="h-4 w-4" /></Button></div></td></tr>); })}</tbody></table>
           </div>
         )}
       </div>

@@ -135,10 +135,10 @@ export interface PerformanceData {
 export interface Document {
   id: string;
   filename: string;
-  content_type: string;
-  size: string;
-  status: 'ready' | 'processing' | 'failed';
+  content_type?: string;
+  status: "ready" | "processing" | "failed";
   uploaded_at: string;
+  doc_metadata?: Record<string, any> | null;
 }
 
 export interface Integration {
@@ -507,13 +507,8 @@ class APIClient {
     });
   }
 
-  async downloadDocument(documentId: string): Promise<Blob> {
-    const response = await fetch(`${API_BASE_URL}/v1/kb/documents/${documentId}/download`, {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
-    });
-    return response.blob();
+  async downloadDocument(documentId: string): Promise<{ download_url: string; filename: string; content_type: string }> {
+    return this.request(`${API_BASE_URL}/v1/kb/documents/${documentId}/download`);
   }
 
   async addTextSnippet(title: string, content: string): Promise<{ id: string; title: string; status: string; created_at: string }> {
