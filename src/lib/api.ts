@@ -216,6 +216,7 @@ class APIClient {
     const response = await fetch(url, {
       ...options,
       headers,
+      credentials: 'omit', // Fix CORS issues with preview domains
     });
 
     if (!response.ok) {
@@ -237,6 +238,7 @@ class APIClient {
       method: 'POST',
       headers,
       body: formData,
+      credentials: 'omit', // Fix CORS issues with preview domains
     });
 
     if (!response.ok) {

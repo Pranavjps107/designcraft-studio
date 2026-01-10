@@ -43,8 +43,16 @@ export default function KnowledgeBase() {
       setDocuments(data.documents ?? []);
       setProcessingCount(data.processing_count ?? 0);
       setTotal(data.total ?? 0);
-    } catch (error) { toast.error("Failed to load documents"); }
-    finally { setIsLoading(false); }
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        // Token expired, redirect to login
+        window.location.href = '/login';
+        return;
+      }
+      toast.error("Failed to load documents");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -55,8 +63,15 @@ export default function KnowledgeBase() {
       await api.uploadDocument(file);
       toast.success("Document uploaded successfully");
       loadDocuments();
-    } catch (error: any) { toast.error(error.message || "Failed to upload document"); }
-    finally { setIsUploading(false); }
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        window.location.href = '/login';
+        return;
+      }
+      toast.error(error.message || "Failed to upload document");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleTextUpload = async () => {
@@ -71,8 +86,15 @@ export default function KnowledgeBase() {
       setTextTitle("");
       setTextContent("");
       loadDocuments();
-    } catch (error: any) { toast.error(error.message || "Failed to add text snippet"); }
-    finally { setIsUploading(false); }
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        window.location.href = '/login';
+        return;
+      }
+      toast.error(error.message || "Failed to add text snippet");
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   const handleDelete = async (id: string) => {
@@ -80,14 +102,26 @@ export default function KnowledgeBase() {
       await api.deleteDocument(id);
       toast.success("Document deleted");
       loadDocuments();
-    } catch (error) { toast.error("Failed to delete document"); }
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        window.location.href = '/login';
+        return;
+      }
+      toast.error("Failed to delete document");
+    }
   };
 
   const handleDownload = async (id: string, filename: string) => {
     try {
       const response = await api.downloadDocument(id);
-      window.open(response.download_url, '_blank');
-    } catch (error) { toast.error("Failed to download document"); }
+      window.location.href = response.download_url;
+    } catch (error: any) {
+      if (error.message?.includes('401') || error.message?.includes('Unauthorized')) {
+        window.location.href = '/login';
+        return;
+      }
+      toast.error("Failed to download document");
+    }
   };
 
   return (
