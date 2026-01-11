@@ -509,9 +509,53 @@ class APIClient {
     });
   }
 
-  async downloadDocument(documentId: string): Promise<{ download_url: string; filename: string; content_type: string }> {
-    return this.request(`${API_BASE_URL}/v1/kb/documents/${documentId}/download`);
+  async downloadDocument(documentId: string) {
+  const res = await fetch(
+    `${API_BASE_URL}/v1/kb/documents/${documentId}/download`,
+    {
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+      },
+    }
+  );
+
+  const contentType = res.headers.get('content-type') || '';
+
+  // Case 1: JSON response with presigned URL
+  if (contentType.includes('application/json')) {
+    const data = await res.json();
+
+    if (data.download_url) {
+      window.open(data.download_url, '_blank');
+      return;
+    }
+
+    throw new Error('Invalid download response');
   }
+
+  // Case 2: Binary stream
+  const blob = await res.blob();
+  const url = URL.createObjectURL(blob);
+
+  // Try to extract filename from headers
+  const disposition = res.headers.get('content-disposition');
+  let filename = 'download';
+
+  if (disposition) {
+    const match = disposition.match(/filename="?([^"]+)"?/);
+    if (match) filename = match[1];
+  }
+
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+
+  URL.revokeObjectURL(url);
+}
+
 
   async addTextSnippet(title: string, content: string) {
     return this.request(`${API_BASE_URL}/v1/kb/text`, {
