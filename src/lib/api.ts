@@ -513,12 +513,16 @@ class APIClient {
     return this.request(`${API_BASE_URL}/v1/kb/documents/${documentId}/download`);
   }
 
-  async addTextSnippet(title: string, content: string): Promise<{ id: string; title: string; status: string; created_at: string }> {
+  async addTextSnippet(title: string, content: string) {
     return this.request(`${API_BASE_URL}/v1/kb/text`, {
       method: 'POST',
-      body: JSON.stringify({ title, content }),
+      body: JSON.stringify({
+        title,
+        text: content,   // ✅ FIX
+      }),
     });
   }
+
 
   // ==================== INTEGRATIONS APIs ====================
 
