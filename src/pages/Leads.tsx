@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
-    Users, Plus, Filter, Download, Search, Grid, List,
-    MoreVertical, Phone, Mail, Building2, Calendar, MapPin,
-    X, Edit, Trash2, Eye, MessageSquare, User, ChevronDown,
-    ArrowUpDown, RefreshCw, UserPlus, Send
+    Users, Plus, Filter, Download, Upload, Search, Grid, List,
+    MoreVertical, Phone, Mail, Building2, Calendar, TrendingUp,
+    Star, Edit, Trash2, Eye, MessageSquare, X, ChevronDown,
+    ArrowUpDown, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -32,203 +32,199 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
-interface Contact {
+interface Lead {
     id: string;
     firstName: string;
     lastName: string;
-    accountName?: string;
-    email: string;
-    secondaryEmail?: string;
+    company: string;
+    title: string;
     phone: string;
-    mobile?: string;
-    otherPhone?: string;
-    title?: string;
-    department?: string;
-    reportingTo?: string;
-    leadSource?: string;
-    dateOfBirth?: string;
-    mailingAddress?: Address;
-    otherAddress?: Address;
-    contactOwner: string;
+    mobile: string;
+    email: string;
+    leadSource: string;
+    leadSubSource?: string;
+    leadStatus: string;
+    leadScore: number;
+    ranking?: string;
+    tone?: string;
+    industry?: string;
+    annualRevenue?: number;
+    employees?: number;
+    rating?: number;
+    country?: string;
+    city?: string;
+    leadOwner: string;
     createdTime: string;
     imageUrl?: string;
     description?: string;
 }
 
-interface Address {
-    country?: string;
-    building?: string;
-    street?: string;
-    city?: string;
-    state?: string;
-    zipCode?: string;
-    latitude?: number;
-    longitude?: number;
-}
-
-const mockContacts: Contact[] = [
+const mockLeads: Lead[] = [
     {
         id: '1',
-        firstName: 'Kris',
-        lastName: 'Marrier',
-        accountName: 'King (Sample)',
-        email: 'kris@king.com',
+        firstName: 'John',
+        lastName: 'Doe',
+        company: 'Tech Corp',
+        title: 'CTO',
         phone: '+1234567890',
         mobile: '+1234567891',
-        title: 'VP Sales',
-        department: 'Sales',
-        leadSource: 'Referral',
-        contactOwner: 'Pranav A',
-        createdTime: '2026-01-10T10:30:00',
-        mailingAddress: {
-            city: 'San Francisco',
-            state: 'California',
-            country: 'USA'
-        }
+        email: 'john.doe@techcorp.com',
+        leadSource: 'Social Media',
+        leadSubSource: 'LinkedIn',
+        leadStatus: 'Qualified',
+        leadScore: 85,
+        ranking: 'Active',
+        tone: 'Interested',
+        industry: 'Technology',
+        annualRevenue: 5000000,
+        employees: 50,
+        rating: 4,
+        country: 'USA',
+        city: 'San Francisco',
+        leadOwner: 'Pranav A',
+        createdTime: '2026-01-15T10:30:00',
+        imageUrl: '/avatars/john.jpg'
     },
     {
         id: '2',
-        firstName: 'Mitsue',
-        lastName: 'Tollner',
-        accountName: 'Morlong Associates',
-        email: 'mitsue@morlong.com',
-        phone: '+9876543210',
-        mobile: '+9876543211',
-        title: 'Marketing Manager',
-        department: 'Marketing',
-        leadSource: 'Social Media',
-        contactOwner: 'Pranav A',
-        createdTime: '2026-01-12T14:20:00',
-        mailingAddress: {
-            city: 'New York',
-            state: 'New York',
-            country: 'USA'
-        }
+        firstName: 'Sarah',
+        lastName: 'Johnson',
+        company: 'Marketing Plus',
+        title: 'Marketing Director',
+        phone: '+1234567892',
+        mobile: '+1234567893',
+        email: 'sarah.j@marketingplus.com',
+        leadSource: 'Advertisement',
+        leadStatus: 'Pre-Qualified',
+        leadScore: 72,
+        tone: 'Eager',
+        industry: 'Marketing',
+        country: 'USA',
+        city: 'New York',
+        leadOwner: 'Pranav A',
+        createdTime: '2026-01-16T14:20:00'
     },
     {
         id: '3',
-        firstName: 'Leota',
-        lastName: 'Dilliard',
-        accountName: 'Commercial Press',
-        email: 'leota@commercialpress.com',
-        phone: '+5551234567',
-        title: 'Sales Director',
-        department: 'Sales',
-        leadSource: 'Cold Call',
-        contactOwner: 'Pranav A',
-        createdTime: '2026-01-14T09:15:00',
-        mailingAddress: {
-            city: 'Boston',
-            state: 'Massachusetts',
-            country: 'USA'
-        }
-    },
-    {
-        id: '4',
-        firstName: 'Josephine',
-        lastName: 'Darakjy',
-        accountName: 'Chanay (Sample)',
-        email: 'josephine@chanay.com',
-        secondaryEmail: 'j.darakjy@example.com',
-        phone: '+4441234567',
-        mobile: '+4441234568',
-        title: 'CEO',
-        department: 'Executive',
-        leadSource: 'Advertisement',
-        contactOwner: 'Pranav A',
-        createdTime: '2026-01-11T11:00:00',
-        mailingAddress: {
-            city: 'London',
-            country: 'UK'
-        }
-    },
-    {
-        id: '5',
-        firstName: 'Capla',
-        lastName: 'Paprocki',
-        accountName: 'Feltz Printing Service',
-        email: 'capla@feltzprinting.com',
-        phone: '+3331234567',
-        title: 'Operations Manager',
-        department: 'Operations',
-        leadSource: 'Website',
-        contactOwner: 'Pranav A',
-        createdTime: '2026-01-13T15:45:00',
-        mailingAddress: {
-            city: 'Chicago',
-            state: 'Illinois',
-            country: 'USA'
-        }
+        firstName: 'Michael',
+        lastName: 'Chen',
+        company: 'Global Ventures',
+        title: 'VP Sales',
+        phone: '+1234567894',
+        mobile: '+1234567895',
+        email: 'mchen@globalventures.com',
+        leadSource: 'Referral',
+        leadStatus: 'Contacted',
+        leadScore: 91,
+        ranking: 'Acquired',
+        tone: 'Cool',
+        industry: 'Finance',
+        country: 'Singapore',
+        city: 'Singapore',
+        leadOwner: 'Pranav A',
+        createdTime: '2026-01-17T09:15:00'
     }
 ];
 
-const leadSources = ['Social Media', 'Advertisement', 'Referral', 'Website', 'Cold Call', 'Trade Show'];
-const departments = ['Sales', 'Marketing', 'Operations', 'Finance', 'Executive', 'Support'];
+const leadSources = [
+    'Social Media', 'WhatsApp', 'Facebook', 'Instagram',
+    'Advertisement', 'Cold Call', 'Referral', 'Offline Store',
+    'Manual Upload', 'Sales Email Alias', 'Live Chat', 'Online Store'
+];
 
-export default function Contacts() {
+const leadStatuses = [
+    'Attempted to Contact', 'Contact in Future', 'Contacted',
+    'Not Contacted', 'Pre-Qualified', 'Qualified', 'Not Qualified',
+    'Junk Lead', 'Lost Lead'
+];
+
+const rankings = ['Acquired', 'Active', 'Market Failed', 'Project Cancelled', 'Shut Down'];
+const tones = ['Cool', 'Eager', 'Interested', 'Anger'];
+const industries = ['Technology', 'Marketing', 'Finance', 'Healthcare', 'Manufacturing', 'Retail'];
+
+export default function Leads() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [selectedContacts, setSelectedContacts] = useState<string[]>([]);
-    const [contacts, setContacts] = useState<Contact[]>(mockContacts);
+    const [selectedLeads, setSelectedLeads] = useState<string[]>([]);
+    const [leads, setLeads] = useState<Lead[]>(mockLeads);
 
+    // Filter states
     const [filters, setFilters] = useState({
         leadSource: 'all',
-        department: 'all',
-        city: '',
+        leadStatus: 'all',
+        ranking: 'all',
+        industry: 'all',
+        minScore: 0,
         touched: false,
         untouched: false
     });
 
-    const filteredContacts = contacts.filter(contact => {
-        const matchesSearch =
-            contact.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            contact.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            contact.email.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            (contact.accountName && contact.accountName.toLowerCase().includes(searchQuery.toLowerCase()));
+    const getStatusColor = (status: string) => {
+        const statusColors: Record<string, string> = {
+            'Qualified': 'bg-green-100 text-green-700',
+            'Pre-Qualified': 'bg-blue-100 text-blue-700',
+            'Contacted': 'bg-purple-100 text-purple-700',
+            'Not Contacted': 'bg-gray-100 text-gray-700',
+            'Lost Lead': 'bg-red-100 text-red-700',
+            'Junk Lead': 'bg-orange-100 text-orange-700'
+        };
+        return statusColors[status] || 'bg-gray-100 text-gray-700';
+    };
 
-        const matchesSource = filters.leadSource === 'all' || contact.leadSource === filters.leadSource;
-        const matchesDepartment = filters.department === 'all' || contact.department === filters.department;
-        const matchesCity = !filters.city ||
-            (contact.mailingAddress?.city && contact.mailingAddress.city.toLowerCase().includes(filters.city.toLowerCase()));
-
-        return matchesSearch && matchesSource && matchesDepartment && matchesCity;
-    });
+    const getScoreColor = (score: number) => {
+        if (score >= 80) return 'text-green-600 bg-green-50';
+        if (score >= 60) return 'text-blue-600 bg-blue-50';
+        if (score >= 40) return 'text-yellow-600 bg-yellow-50';
+        return 'text-red-600 bg-red-50';
+    };
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
-            setSelectedContacts(filteredContacts.map(c => c.id));
+            setSelectedLeads(leads.map(l => l.id));
         } else {
-            setSelectedContacts([]);
+            setSelectedLeads([]);
         }
     };
 
-    const handleSelectContact = (contactId: string, checked: boolean) => {
+    const handleSelectLead = (leadId: string, checked: boolean) => {
         if (checked) {
-            setSelectedContacts([...selectedContacts, contactId]);
+            setSelectedLeads([...selectedLeads, leadId]);
         } else {
-            setSelectedContacts(selectedContacts.filter(id => id !== contactId));
+            setSelectedLeads(selectedLeads.filter(id => id !== leadId));
         }
     };
 
-    const getInitials = (firstName: string, lastName: string) => {
-        return `${firstName[0]}${lastName[0]}`.toUpperCase();
-    };
+    const filteredLeads = leads.filter(lead => {
+        const matchesSearch =
+            lead.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lead.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lead.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            lead.email.toLowerCase().includes(searchQuery.toLowerCase());
+
+        const matchesSource = filters.leadSource === 'all' || lead.leadSource === filters.leadSource;
+        const matchesStatus = filters.leadStatus === 'all' || lead.leadStatus === filters.leadStatus;
+        const matchesRanking = filters.ranking === 'all' || lead.ranking === filters.ranking;
+        const matchesIndustry = filters.industry === 'all' || lead.industry === filters.industry;
+        const matchesScore = lead.leadScore >= filters.minScore;
+
+        return matchesSearch && matchesSource && matchesStatus && matchesRanking && matchesIndustry && matchesScore;
+    });
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
             {/* Header */}
             <header className="bg-white border-b border-slate-200 shadow-sm">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg">
+                            <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
                                 <Users className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Contacts</h1>
-                                <p className="text-sm text-slate-600">{filteredContacts.length} total contacts</p>
+                                <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
+                                <p className="text-sm text-slate-600">{filteredLeads.length} total leads</p>
                             </div>
                         </div>
 
@@ -241,7 +237,7 @@ export default function Contacts() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
-                                {Object.values(filters).some(v => v !== 'all' && v !== '' && v !== false) && (
+                                {Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== false) && (
                                     <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
                                         !
                                     </Badge>
@@ -277,18 +273,18 @@ export default function Contacts() {
                                 </DropdownMenuTrigger>
                                 <DropdownMenuContent>
                                     <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-                                    <DropdownMenuItem>Export as vCard</DropdownMenuItem>
                                     <DropdownMenuItem>Export as Excel</DropdownMenuItem>
+                                    <DropdownMenuItem>Export as PDF</DropdownMenuItem>
                                 </DropdownMenuContent>
                             </DropdownMenu>
 
                             <Button
                                 size="sm"
                                 onClick={() => setShowCreateDialog(true)}
-                                className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg shadow-cyan-500/30"
+                                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30"
                             >
                                 <Plus className="w-4 h-4" />
-                                Create Contact
+                                Create Lead
                             </Button>
                         </div>
                     </div>
@@ -298,7 +294,7 @@ export default function Contacts() {
                         <div className="relative flex-1">
                             <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
                             <Input
-                                placeholder="Search contacts by name, email, account..."
+                                placeholder="Search leads by name, company, email..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
                                 className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
@@ -311,19 +307,15 @@ export default function Contacts() {
                     </div>
 
                     {/* Selected Actions Bar */}
-                    {selectedContacts.length > 0 && (
-                        <div className="mt-3 bg-cyan-50 border border-cyan-200 rounded-lg px-4 py-2 flex items-center justify-between">
-                            <span className="text-sm font-medium text-cyan-900">
-                                {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} selected
+                    {selectedLeads.length > 0 && (
+                        <div className="mt-3 bg-blue-50 border border-blue-200 rounded-lg px-4 py-2 flex items-center justify-between">
+                            <span className="text-sm font-medium text-blue-900">
+                                {selectedLeads.length} lead{selectedLeads.length > 1 ? 's' : ''} selected
                             </span>
                             <div className="flex items-center gap-2">
                                 <Button variant="outline" size="sm" className="gap-2">
-                                    <Send className="w-4 h-4" />
-                                    Send Email
-                                </Button>
-                                <Button variant="outline" size="sm" className="gap-2">
                                     <MessageSquare className="w-4 h-4" />
-                                    Send Message
+                                    Send Email
                                 </Button>
                                 <Button variant="outline" size="sm" className="gap-2">
                                     <Edit className="w-4 h-4" />
@@ -336,7 +328,7 @@ export default function Contacts() {
                                 <Button
                                     variant="ghost"
                                     size="sm"
-                                    onClick={() => setSelectedContacts([])}
+                                    onClick={() => setSelectedLeads([])}
                                 >
                                     <X className="w-4 h-4" />
                                 </Button>
@@ -358,12 +350,14 @@ export default function Contacts() {
                                     size="sm"
                                     onClick={() => setFilters({
                                         leadSource: 'all',
-                                        department: 'all',
-                                        city: '',
+                                        leadStatus: 'all',
+                                        ranking: 'all',
+                                        industry: 'all',
+                                        minScore: 0,
                                         touched: false,
                                         untouched: false
                                     })}
-                                    className="text-cyan-600"
+                                    className="text-blue-600"
                                 >
                                     Clear All
                                 </Button>
@@ -392,26 +386,6 @@ export default function Contacts() {
                                             />
                                             <span className="text-sm text-slate-600">Untouched Records</span>
                                         </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox />
-                                            <span className="text-sm text-slate-600">Locked</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox />
-                                            <span className="text-sm text-slate-600">Activities</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox />
-                                            <span className="text-sm text-slate-600">Campaigns</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox />
-                                            <span className="text-sm text-slate-600">Cadences</span>
-                                        </label>
-                                        <label className="flex items-center gap-2 cursor-pointer">
-                                            <Checkbox />
-                                            <span className="text-sm text-slate-600">Email Status</span>
-                                        </label>
                                     </div>
                                 </div>
 
@@ -434,33 +408,81 @@ export default function Contacts() {
                                     </Select>
                                 </div>
 
-                                {/* Department */}
+                                {/* Lead Status */}
                                 <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Department</Label>
+                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Lead Status</Label>
                                     <Select
-                                        value={filters.department}
-                                        onValueChange={(value) => setFilters({ ...filters, department: value })}
+                                        value={filters.leadStatus}
+                                        onValueChange={(value) => setFilters({ ...filters, leadStatus: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="all">All Departments</SelectItem>
-                                            {departments.map(dept => (
-                                                <SelectItem key={dept} value={dept}>{dept}</SelectItem>
+                                            <SelectItem value="all">All Statuses</SelectItem>
+                                            {leadStatuses.map(status => (
+                                                <SelectItem key={status} value={status}>{status}</SelectItem>
                                             ))}
                                         </SelectContent>
                                     </Select>
                                 </div>
 
-                                {/* City */}
+                                {/* Ranking */}
                                 <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">City</Label>
-                                    <Input
-                                        placeholder="Filter by city..."
-                                        value={filters.city}
-                                        onChange={(e) => setFilters({ ...filters, city: e.target.value })}
+                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Ranking</Label>
+                                    <Select
+                                        value={filters.ranking}
+                                        onValueChange={(value) => setFilters({ ...filters, ranking: value })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Rankings</SelectItem>
+                                            {rankings.map(rank => (
+                                                <SelectItem key={rank} value={rank}>{rank}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Industry */}
+                                <div>
+                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Industry</Label>
+                                    <Select
+                                        value={filters.industry}
+                                        onValueChange={(value) => setFilters({ ...filters, industry: value })}
+                                    >
+                                        <SelectTrigger>
+                                            <SelectValue />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                            <SelectItem value="all">All Industries</SelectItem>
+                                            {industries.map(industry => (
+                                                <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                                            ))}
+                                        </SelectContent>
+                                    </Select>
+                                </div>
+
+                                {/* Lead Score */}
+                                <div>
+                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">
+                                        Minimum Lead Score: {filters.minScore}
+                                    </Label>
+                                    <input
+                                        type="range"
+                                        min="0"
+                                        max="100"
+                                        value={filters.minScore}
+                                        onChange={(e) => setFilters({ ...filters, minScore: parseInt(e.target.value) })}
+                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-blue-600"
                                     />
+                                    <div className="flex justify-between text-xs text-slate-500 mt-1">
+                                        <span>0</span>
+                                        <span>50</span>
+                                        <span>100</span>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -477,27 +499,36 @@ export default function Contacts() {
                                         <tr className="bg-slate-50 border-b border-slate-200">
                                             <th className="px-6 py-4 text-left">
                                                 <Checkbox
-                                                    checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
+                                                    checked={selectedLeads.length === filteredLeads.length && filteredLeads.length > 0}
                                                     onCheckedChange={handleSelectAll}
                                                 />
                                             </th>
                                             <th className="px-6 py-4 text-left">
                                                 <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
-                                                    Contact Name
+                                                    Lead Name
+                                                    <ArrowUpDown className="w-3 h-3" />
+                                                </button>
+                                            </th>
+                                            <th className="px-6 py-4 text-left">
+                                                <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
+                                                    Company
                                                     <ArrowUpDown className="w-3 h-3" />
                                                 </button>
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Account
+                                                Contact
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Contact Info
+                                                Lead Source
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Department
+                                                Status
                                             </th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Location
+                                            <th className="px-6 py-4 text-left">
+                                                <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
+                                                    Score
+                                                    <ArrowUpDown className="w-3 h-3" />
+                                                </button>
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                                 Owner
@@ -511,73 +542,69 @@ export default function Contacts() {
                                         </tr>
                                     </thead>
                                     <tbody className="divide-y divide-slate-200">
-                                        {filteredContacts.map((contact) => (
+                                        {filteredLeads.map((lead) => (
                                             <tr
-                                                key={contact.id}
-                                                className="hover:bg-cyan-50/50 transition-colors group"
+                                                key={lead.id}
+                                                className="hover:bg-blue-50/50 transition-colors group"
                                             >
                                                 <td className="px-6 py-4">
                                                     <Checkbox
-                                                        checked={selectedContacts.includes(contact.id)}
-                                                        onCheckedChange={(checked) => handleSelectContact(contact.id, checked as boolean)}
+                                                        checked={selectedLeads.includes(lead.id)}
+                                                        onCheckedChange={(checked) => handleSelectLead(lead.id, checked as boolean)}
                                                     />
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
-                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white font-semibold">
-                                                            {getInitials(contact.firstName, contact.lastName)}
+                                                        <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
+                                                            {lead.firstName[0]}{lead.lastName[0]}
                                                         </div>
                                                         <div>
                                                             <div className="font-medium text-slate-900">
-                                                                {contact.firstName} {contact.lastName}
+                                                                {lead.firstName} {lead.lastName}
                                                             </div>
-                                                            {contact.title && (
-                                                                <div className="text-sm text-slate-500">{contact.title}</div>
-                                                            )}
+                                                            <div className="text-sm text-slate-500">{lead.title}</div>
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {contact.accountName && (
-                                                        <div className="flex items-center gap-2">
-                                                            <Building2 className="w-4 h-4 text-slate-400" />
-                                                            <span className="text-slate-900">{contact.accountName}</span>
-                                                        </div>
-                                                    )}
+                                                    <div className="flex items-center gap-2">
+                                                        <Building2 className="w-4 h-4 text-slate-400" />
+                                                        <span className="font-medium text-slate-900">{lead.company}</span>
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="space-y-1">
                                                         <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <Mail className="w-3 h-3" />
-                                                            {contact.email}
+                                                            <Phone className="w-3 h-3" />
+                                                            {lead.phone}
                                                         </div>
                                                         <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <Phone className="w-3 h-3" />
-                                                            {contact.phone}
+                                                            <Mail className="w-3 h-3" />
+                                                            {lead.email}
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {contact.department && (
-                                                        <Badge variant="outline">{contact.department}</Badge>
-                                                    )}
+                                                    <Badge variant="outline" className="font-normal">
+                                                        {lead.leadSource}
+                                                    </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    {contact.mailingAddress && (
-                                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <MapPin className="w-4 h-4 text-slate-400" />
-                                                            <span>
-                                                                {contact.mailingAddress.city}
-                                                                {contact.mailingAddress.country && `, ${contact.mailingAddress.country}`}
-                                                            </span>
-                                                        </div>
-                                                    )}
+                                                    <Badge className={getStatusColor(lead.leadStatus)}>
+                                                        {lead.leadStatus}
+                                                    </Badge>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg font-semibold ${getScoreColor(lead.leadScore)}`}>
+                                                        <TrendingUp className="w-4 h-4" />
+                                                        {lead.leadScore}
+                                                    </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {contact.contactOwner}
+                                                    {lead.leadOwner}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {new Date(contact.createdTime).toLocaleDateString()}
+                                                    {new Date(lead.createdTime).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -594,9 +621,8 @@ export default function Contacts() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
+                                                                <DropdownMenuItem>Convert to Contact</DropdownMenuItem>
                                                                 <DropdownMenuItem>Send Email</DropdownMenuItem>
-                                                                <DropdownMenuItem>Call Contact</DropdownMenuItem>
-                                                                <DropdownMenuItem>Create Deal</DropdownMenuItem>
                                                                 <DropdownMenuItem>Create Task</DropdownMenuItem>
                                                                 <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
@@ -611,15 +637,15 @@ export default function Contacts() {
                         </div>
                     ) : (
                         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredContacts.map((contact) => (
+                            {filteredLeads.map((lead) => (
                                 <div
-                                    key={contact.id}
+                                    key={lead.id}
                                     className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300 group"
                                 >
                                     <div className="flex items-start justify-between mb-4">
                                         <Checkbox
-                                            checked={selectedContacts.includes(contact.id)}
-                                            onCheckedChange={(checked) => handleSelectContact(contact.id, checked as boolean)}
+                                            checked={selectedLeads.includes(lead.id)}
+                                            onCheckedChange={(checked) => handleSelectLead(lead.id, checked as boolean)}
                                         />
                                         <DropdownMenu>
                                             <DropdownMenuTrigger asChild>
@@ -630,59 +656,47 @@ export default function Contacts() {
                                             <DropdownMenuContent align="end">
                                                 <DropdownMenuItem>View Details</DropdownMenuItem>
                                                 <DropdownMenuItem>Edit</DropdownMenuItem>
-                                                <DropdownMenuItem>Send Email</DropdownMenuItem>
+                                                <DropdownMenuItem>Convert</DropdownMenuItem>
                                                 <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>
                                     </div>
 
                                     <div className="text-center mb-4">
-                                        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-cyan-500 to-blue-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
-                                            {getInitials(contact.firstName, contact.lastName)}
+                                        <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
+                                            {lead.firstName[0]}{lead.lastName[0]}
                                         </div>
                                         <h3 className="font-semibold text-slate-900 text-lg">
-                                            {contact.firstName} {contact.lastName}
+                                            {lead.firstName} {lead.lastName}
                                         </h3>
-                                        {contact.title && (
-                                            <p className="text-sm text-slate-600">{contact.title}</p>
-                                        )}
-                                        {contact.accountName && (
-                                            <p className="text-sm text-slate-500 mt-1">{contact.accountName}</p>
-                                        )}
+                                        <p className="text-sm text-slate-600">{lead.title}</p>
+                                        <p className="text-sm text-slate-500 mt-1">{lead.company}</p>
                                     </div>
 
                                     <div className="space-y-2 mb-4">
                                         <div className="flex items-center gap-2 text-sm text-slate-600">
                                             <Mail className="w-4 h-4 text-slate-400" />
-                                            <span className="truncate">{contact.email}</span>
+                                            <span className="truncate">{lead.email}</span>
                                         </div>
                                         <div className="flex items-center gap-2 text-sm text-slate-600">
                                             <Phone className="w-4 h-4 text-slate-400" />
-                                            <span>{contact.phone}</span>
+                                            <span>{lead.phone}</span>
                                         </div>
-                                        {contact.mailingAddress && (
-                                            <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                <MapPin className="w-4 h-4 text-slate-400" />
-                                                <span className="truncate">
-                                                    {contact.mailingAddress.city}
-                                                    {contact.mailingAddress.country && `, ${contact.mailingAddress.country}`}
-                                                </span>
-                                            </div>
-                                        )}
                                     </div>
 
-                                    {contact.department && (
-                                        <div className="mb-3">
-                                            <Badge variant="outline" className="w-full justify-center">
-                                                {contact.department}
-                                            </Badge>
+                                    <div className="flex items-center justify-between mb-3">
+                                        <Badge className={getStatusColor(lead.leadStatus)} variant="secondary">
+                                            {lead.leadStatus}
+                                        </Badge>
+                                        <div className={`px-2 py-1 rounded-lg font-semibold text-sm ${getScoreColor(lead.leadScore)}`}>
+                                            {lead.leadScore}
                                         </div>
-                                    )}
+                                    </div>
 
                                     <div className="flex items-center gap-2 pt-3 border-t border-slate-100">
                                         <Button variant="outline" size="sm" className="flex-1">
                                             <MessageSquare className="w-4 h-4 mr-1" />
-                                            Message
+                                            Contact
                                         </Button>
                                         <Button variant="outline" size="sm" className="flex-1">
                                             <Eye className="w-4 h-4 mr-1" />
@@ -694,30 +708,30 @@ export default function Contacts() {
                         </div>
                     )}
 
-                    {filteredContacts.length === 0 && (
+                    {filteredLeads.length === 0 && (
                         <div className="text-center py-12">
                             <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-slate-900 mb-2">No contacts found</h3>
+                            <h3 className="text-lg font-medium text-slate-900 mb-2">No leads found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== '' && v !== false)
+                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== false)
                                     ? 'Try adjusting your search or filters'
-                                    : 'Get started by creating your first contact'}
+                                    : 'Get started by creating your first lead'}
                             </p>
                             <Button onClick={() => setShowCreateDialog(true)}>
                                 <Plus className="w-4 h-4 mr-2" />
-                                Create Contact
+                                Create Lead
                             </Button>
                         </div>
                     )}
                 </main>
             </div>
 
-            {/* Create Contact Dialog */}
-            <CreateContactDialog
+            {/* Create Lead Dialog */}
+            <CreateLeadDialog
                 open={showCreateDialog}
                 onOpenChange={setShowCreateDialog}
-                onSuccess={(newContact) => {
-                    setContacts([...contacts, newContact]);
+                onSuccess={(newLead) => {
+                    setLeads([...leads, newLead]);
                     setShowCreateDialog(false);
                 }}
             />
@@ -725,103 +739,86 @@ export default function Contacts() {
     );
 }
 
-// Create Contact Dialog Component
-function CreateContactDialog({
+// Create Lead Dialog Component
+function CreateLeadDialog({
     open,
     onOpenChange,
     onSuccess
 }: {
     open: boolean;
     onOpenChange: (open: boolean) => void;
-    onSuccess: (contact: Contact) => void;
+    onSuccess: (lead: Lead) => void;
 }) {
     const [formData, setFormData] = useState({
         firstName: '',
         lastName: '',
-        accountName: '',
-        email: '',
-        secondaryEmail: '',
+        company: '',
+        title: '',
         phone: '',
         mobile: '',
-        title: '',
-        department: '',
+        email: '',
         leadSource: '',
-        city: '',
-        state: '',
+        leadStatus: 'Not Contacted',
+        industry: '',
         country: '',
+        city: '',
         description: ''
     });
 
     const handleSubmit = (e: React.FormEvent) => {
         e.preventDefault();
 
-        const newContact: Contact = {
+        const newLead: Lead = {
             id: String(Date.now()),
-            firstName: formData.firstName,
-            lastName: formData.lastName,
-            accountName: formData.accountName || undefined,
-            email: formData.email,
-            secondaryEmail: formData.secondaryEmail || undefined,
-            phone: formData.phone,
-            mobile: formData.mobile || undefined,
-            title: formData.title || undefined,
-            department: formData.department || undefined,
-            leadSource: formData.leadSource || undefined,
-            mailingAddress: {
-                city: formData.city || undefined,
-                state: formData.state || undefined,
-                country: formData.country || undefined
-            },
-            contactOwner: 'Pranav A',
-            createdTime: new Date().toISOString(),
-            description: formData.description || undefined
+            ...formData,
+            leadScore: Math.floor(Math.random() * 40) + 60,
+            leadOwner: 'Pranav A',
+            createdTime: new Date().toISOString()
         };
 
-        onSuccess(newContact);
+        onSuccess(newLead);
 
         // Reset form
         setFormData({
             firstName: '',
             lastName: '',
-            accountName: '',
-            email: '',
-            secondaryEmail: '',
+            company: '',
+            title: '',
             phone: '',
             mobile: '',
-            title: '',
-            department: '',
+            email: '',
             leadSource: '',
-            city: '',
-            state: '',
+            leadStatus: 'Not Contacted',
+            industry: '',
             country: '',
+            city: '',
             description: ''
         });
     };
 
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
-            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
+            <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2 text-2xl">
-                        <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-lg">
-                            <UserPlus className="w-5 h-5 text-white" />
+                        <div className="p-2 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-lg">
+                            <Users className="w-5 h-5 text-white" />
                         </div>
-                        Create Contact
+                        Create New Lead
                     </DialogTitle>
                 </DialogHeader>
 
                 <form onSubmit={handleSubmit} className="space-y-6 mt-4">
-                    {/* Contact Identity */}
+                    {/* Lead Identity */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Contact Identity</h3>
+                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Lead Identity</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="firstName">First Name *</Label>
+                                <Label htmlFor="firstName">First Name</Label>
                                 <Input
                                     id="firstName"
                                     value={formData.firstName}
                                     onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                    required
                                 />
                             </div>
                             <div>
@@ -834,11 +831,12 @@ function CreateContactDialog({
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="accountName">Account Name</Label>
+                                <Label htmlFor="company">Company *</Label>
                                 <Input
-                                    id="accountName"
-                                    value={formData.accountName}
-                                    onChange={(e) => setFormData({ ...formData, accountName: e.target.value })}
+                                    id="company"
+                                    value={formData.company}
+                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+                                    required
                                 />
                             </div>
                             <div>
@@ -852,37 +850,17 @@ function CreateContactDialog({
                         </div>
                     </div>
 
-                    {/* Communication */}
+                    {/* Communication Details */}
                     <div>
                         <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Communication</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="email">Email *</Label>
-                                <Input
-                                    id="email"
-                                    type="email"
-                                    value={formData.email}
-                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="secondaryEmail">Secondary Email</Label>
-                                <Input
-                                    id="secondaryEmail"
-                                    type="email"
-                                    value={formData.secondaryEmail}
-                                    onChange={(e) => setFormData({ ...formData, secondaryEmail: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="phone">Phone *</Label>
+                                <Label htmlFor="phone">Phone</Label>
                                 <Input
                                     id="phone"
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
-                                    required
                                 />
                             </div>
                             <div>
@@ -894,29 +872,22 @@ function CreateContactDialog({
                                     onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
                                 />
                             </div>
+                            <div className="col-span-2">
+                                <Label htmlFor="email">Email</Label>
+                                <Input
+                                    id="email"
+                                    type="email"
+                                    value={formData.email}
+                                    onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                                />
+                            </div>
                         </div>
                     </div>
 
-                    {/* Professional Details */}
+                    {/* Lead Details */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Professional Details</h3>
+                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Lead Details</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="department">Department</Label>
-                                <Select
-                                    value={formData.department}
-                                    onValueChange={(value) => setFormData({ ...formData, department: value })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select department" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {departments.map(dept => (
-                                            <SelectItem key={dept} value={dept}>{dept}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
                             <div>
                                 <Label htmlFor="leadSource">Lead Source</Label>
                                 <Select
@@ -933,35 +904,59 @@ function CreateContactDialog({
                                     </SelectContent>
                                 </Select>
                             </div>
+                            <div>
+                                <Label htmlFor="leadStatus">Lead Status</Label>
+                                <Select
+                                    value={formData.leadStatus}
+                                    onValueChange={(value) => setFormData({ ...formData, leadStatus: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {leadStatuses.map(status => (
+                                            <SelectItem key={status} value={status}>{status}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
+                            <div>
+                                <Label htmlFor="industry">Industry</Label>
+                                <Select
+                                    value={formData.industry}
+                                    onValueChange={(value) => setFormData({ ...formData, industry: value })}
+                                >
+                                    <SelectTrigger>
+                                        <SelectValue placeholder="Select industry" />
+                                    </SelectTrigger>
+                                    <SelectContent>
+                                        {industries.map(industry => (
+                                            <SelectItem key={industry} value={industry}>{industry}</SelectItem>
+                                        ))}
+                                    </SelectContent>
+                                </Select>
+                            </div>
                         </div>
                     </div>
 
-                    {/* Address Information */}
+                    {/* Address */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Mailing Address</h3>
+                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Address Information</h3>
                         <div className="grid grid-cols-2 gap-4">
+                            <div>
+                                <Label htmlFor="country">Country</Label>
+                                <Input
+                                    id="country"
+                                    value={formData.country}
+                                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
+                                />
+                            </div>
                             <div>
                                 <Label htmlFor="city">City</Label>
                                 <Input
                                     id="city"
                                     value={formData.city}
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="state">State/Province</Label>
-                                <Input
-                                    id="state"
-                                    value={formData.state}
-                                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
-                                />
-                            </div>
-                            <div className="col-span-2">
-                                <Label htmlFor="country">Country/Region</Label>
-                                <Input
-                                    id="country"
-                                    value={formData.country}
-                                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
                                 />
                             </div>
                         </div>
@@ -982,8 +977,8 @@ function CreateContactDialog({
                         <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
                             Cancel
                         </Button>
-                        <Button type="submit" className="bg-gradient-to-r from-cyan-600 to-blue-600">
-                            Create Contact
+                        <Button type="submit" className="bg-gradient-to-r from-blue-600 to-indigo-600">
+                            Create Lead
                         </Button>
                     </DialogFooter>
                 </form>
