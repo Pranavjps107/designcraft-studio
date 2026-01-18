@@ -7,11 +7,13 @@ import Analytics from './pages/Analytics';
 import KnowledgeBase from './pages/KnowledgeBase';
 import Integrations from './pages/Integrations';
 import Settings from './pages/Settings';
-import Contacts from './pages/Contacts';
+import Customers from './pages/Customers';
 import Leads from './pages/Leads';
 import Deals from './pages/Deals';
 import Tasks from './pages/Tasks';
 import Documents from './pages/Documents';
+import Orders from './pages/Orders';
+import Campaigns from './pages/Campaigns';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 
@@ -23,7 +25,7 @@ function App() {
                     {/* Auth Routes */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/signup" element={<SignUp />} />
-                    
+
                     {/* Dashboard Routes */}
                     <Route path="/" element={<Layout />}>
                         <Route index element={<Navigate to="/dashboard" replace />} />
@@ -36,9 +38,11 @@ function App() {
 
                         {/* CRM Module Routes */}
                         <Route path="leads" element={<Leads />} />
-                        <Route path="contacts" element={<Contacts />} />
+                        <Route path="customers" element={<Customers />} />
                         <Route path="deals" element={<Deals />} />
+                        <Route path="orders" element={<Orders />} />
                         <Route path="tasks" element={<Tasks />} />
+                        <Route path="campaigns" element={<Campaigns />} />
                         <Route path="documents" element={<Documents />} />
 
                         {/* Catch all - redirect to dashboard */}

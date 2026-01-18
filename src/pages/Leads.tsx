@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import {
-    Users, Plus, Filter, Download, Upload, Search, Grid, List,
-    MoreVertical, Phone, Mail, Building2, Calendar, TrendingUp,
+    Users, Plus, Filter, Download, Search, Grid, List,
+    MoreVertical, Phone, Mail, TrendingUp,
     Star, Edit, Trash2, Eye, MessageSquare, X, ChevronDown,
     ArrowUpDown, RefreshCw
 } from 'lucide-react';
@@ -151,6 +151,9 @@ const leadStatuses: Lead['lead_status'][] = [
 
 const budgetRanges = ['500-1000', '1000-2000', '2000+'];
 
+const rankings = ['Hot', 'Warm', 'Cold'];
+const industries = ['Technology', 'Healthcare', 'Finance', 'Retail', 'Education', 'Manufacturing'];
+
 export default function Leads() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
     const [showCreateDialog, setShowCreateDialog] = useState(false);
@@ -163,21 +166,17 @@ export default function Leads() {
     const [filters, setFilters] = useState({
         leadSource: 'all',
         leadStatus: 'all',
-        ranking: 'all',
-        industry: 'all',
-        minScore: 0,
-        touched: false,
-        untouched: false
+        minScore: 0
     });
 
-    const getStatusColor = (status: string) => {
-        const statusColors: Record<string, string> = {
-            'Qualified': 'bg-green-100 text-green-700',
-            'Pre-Qualified': 'bg-blue-100 text-blue-700',
+    const getStatusColor = (status: Lead['lead_status']) => {
+        const statusColors: Record<Lead['lead_status'], string> = {
+            'New': 'bg-blue-100 text-blue-700',
             'Contacted': 'bg-purple-100 text-purple-700',
-            'Not Contacted': 'bg-gray-100 text-gray-700',
-            'Lost Lead': 'bg-red-100 text-red-700',
-            'Junk Lead': 'bg-orange-100 text-orange-700'
+            'Qualified': 'bg-green-100 text-green-700',
+            'Not Interested': 'bg-gray-100 text-gray-700',
+            'Converted': 'bg-teal-100 text-teal-700',
+            'Junk': 'bg-orange-100 text-orange-700'
         };
         return statusColors[status] || 'bg-gray-100 text-gray-700';
     };
@@ -207,18 +206,15 @@ export default function Leads() {
 
     const filteredLeads = leads.filter(lead => {
         const matchesSearch =
-            lead.firstName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            lead.lastName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            lead.company.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            lead.email.toLowerCase().includes(searchQuery.toLowerCase());
+            lead.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (lead.email && lead.email.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            lead.phone.toLowerCase().includes(searchQuery.toLowerCase());
 
-        const matchesSource = filters.leadSource === 'all' || lead.leadSource === filters.leadSource;
-        const matchesStatus = filters.leadStatus === 'all' || lead.leadStatus === filters.leadStatus;
-        const matchesRanking = filters.ranking === 'all' || lead.ranking === filters.ranking;
-        const matchesIndustry = filters.industry === 'all' || lead.industry === filters.industry;
-        const matchesScore = lead.leadScore >= filters.minScore;
+        const matchesSource = filters.leadSource === 'all' || lead.lead_source === filters.leadSource;
+        const matchesStatus = filters.leadStatus === 'all' || lead.lead_status === filters.leadStatus;
+        const matchesScore = lead.lead_score >= filters.minScore;
 
-        return matchesSearch && matchesSource && matchesStatus && matchesRanking && matchesIndustry && matchesScore;
+        return matchesSearch && matchesSource && matchesStatus && matchesScore;
     });
 
     return (
@@ -360,11 +356,7 @@ export default function Leads() {
                                     onClick={() => setFilters({
                                         leadSource: 'all',
                                         leadStatus: 'all',
-                                        ranking: 'all',
-                                        industry: 'all',
-                                        minScore: 0,
-                                        touched: false,
-                                        untouched: false
+                                        minScore: 0
                                     })}
                                     className="text-blue-600"
                                 >
@@ -373,37 +365,14 @@ export default function Leads() {
                             </div>
 
                             <div className="space-y-6">
-                                {/* System Filters */}
-                                <div>
-                                    <h3 className="text-sm font-medium text-slate-700 mb-3">System Filters</h3>
-                                    <div className="space-y-2">
-                                        <label className="flex items-center gap-2">
-                                            <Checkbox
-                                                checked={filters.touched}
-                                                onCheckedChange={(checked) =>
-                                                    setFilters({ ...filters, touched: checked as boolean })
-                                                }
-                                            />
-                                            <span className="text-sm text-slate-600">Touched Records</span>
-                                        </label>
-                                        <label className="flex items-center gap-2">
-                                            <Checkbox
-                                                checked={filters.untouched}
-                                                onCheckedChange={(checked) =>
-                                                    setFilters({ ...filters, untouched: checked as boolean })
-                                                }
-                                            />
-                                            <span className="text-sm text-slate-600">Untouched Records</span>
-                                        </label>
-                                    </div>
-                                </div>
+
 
                                 {/* Lead Source */}
                                 <div>
                                     <Label className="text-sm font-medium text-slate-700 mb-2 block">Lead Source</Label>
                                     <Select
                                         value={filters.leadSource}
-                                        onValueChange={(value) => setFilters({ ...filters, leadSource: value })}
+                                        onValueChange={(value: string) => setFilters({ ...filters, leadSource: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
@@ -422,7 +391,7 @@ export default function Leads() {
                                     <Label className="text-sm font-medium text-slate-700 mb-2 block">Lead Status</Label>
                                     <Select
                                         value={filters.leadStatus}
-                                        onValueChange={(value) => setFilters({ ...filters, leadStatus: value })}
+                                        onValueChange={(value: string) => setFilters({ ...filters, leadStatus: value })}
                                     >
                                         <SelectTrigger>
                                             <SelectValue />
@@ -436,43 +405,7 @@ export default function Leads() {
                                     </Select>
                                 </div>
 
-                                {/* Ranking */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Ranking</Label>
-                                    <Select
-                                        value={filters.ranking}
-                                        onValueChange={(value) => setFilters({ ...filters, ranking: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Rankings</SelectItem>
-                                            {rankings.map(rank => (
-                                                <SelectItem key={rank} value={rank}>{rank}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
 
-                                {/* Industry */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Industry</Label>
-                                    <Select
-                                        value={filters.industry}
-                                        onValueChange={(value) => setFilters({ ...filters, industry: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Industries</SelectItem>
-                                            {industries.map(industry => (
-                                                <SelectItem key={industry} value={industry}>{industry}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
 
                                 {/* Lead Score */}
                                 <div>
@@ -565,55 +498,36 @@ export default function Leads() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-3">
                                                         <div className="w-10 h-10 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-semibold">
-                                                            {lead.firstName[0]}{lead.lastName[0]}
+                                                            {lead.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                                                         </div>
                                                         <div>
                                                             <div className="font-medium text-slate-900">
-                                                                {lead.firstName} {lead.lastName}
+                                                                {lead.name}
                                                             </div>
-                                                            <div className="text-sm text-slate-500">{lead.title}</div>
-                                                        </div>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-2">
-                                                        <Building2 className="w-4 h-4 text-slate-400" />
-                                                        <span className="font-medium text-slate-900">{lead.company}</span>
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="space-y-1">
-                                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <Phone className="w-3 h-3" />
-                                                            {lead.phone}
-                                                        </div>
-                                                        <div className="flex items-center gap-2 text-sm text-slate-600">
-                                                            <Mail className="w-3 h-3" />
-                                                            {lead.email}
                                                         </div>
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <Badge variant="outline" className="font-normal">
-                                                        {lead.leadSource}
+                                                        {lead.lead_source}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <Badge className={getStatusColor(lead.leadStatus)}>
-                                                        {lead.leadStatus}
+                                                    <Badge className={getStatusColor(lead.lead_status)}>
+                                                        {lead.lead_status}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg font-semibold ${getScoreColor(lead.leadScore)}`}>
+                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg font-semibold ${getScoreColor(lead.lead_score)}`}>
                                                         <TrendingUp className="w-4 h-4" />
-                                                        {lead.leadScore}
+                                                        {lead.lead_score}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {lead.leadOwner}
+                                                    {lead.lead_owner}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {new Date(lead.createdTime).toLocaleDateString()}
+                                                    {new Date(lead.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -673,13 +587,12 @@ export default function Leads() {
 
                                     <div className="text-center mb-4">
                                         <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white text-2xl font-bold mb-3">
-                                            {lead.firstName[0]}{lead.lastName[0]}
+                                            {lead.name.split(' ').map(n => n[0]).join('').substring(0, 2)}
                                         </div>
                                         <h3 className="font-semibold text-slate-900 text-lg">
-                                            {lead.firstName} {lead.lastName}
+                                            {lead.name}
                                         </h3>
-                                        <p className="text-sm text-slate-600">{lead.title}</p>
-                                        <p className="text-sm text-slate-500 mt-1">{lead.company}</p>
+                                        <p className="text-sm text-slate-600">{lead.city ? `${lead.city}, ${lead.state || ''}` : 'Location not specified'}</p>
                                     </div>
 
                                     <div className="space-y-2 mb-4">
@@ -694,11 +607,11 @@ export default function Leads() {
                                     </div>
 
                                     <div className="flex items-center justify-between mb-3">
-                                        <Badge className={getStatusColor(lead.leadStatus)} variant="secondary">
-                                            {lead.leadStatus}
+                                        <Badge className={getStatusColor(lead.lead_status)} variant="secondary">
+                                            {lead.lead_status}
                                         </Badge>
-                                        <div className={`px-2 py-1 rounded-lg font-semibold text-sm ${getScoreColor(lead.leadScore)}`}>
-                                            {lead.leadScore}
+                                        <div className={`px-2 py-1 rounded-lg font-semibold text-sm ${getScoreColor(lead.lead_score)}`}>
+                                            {lead.lead_score}
                                         </div>
                                     </div>
 
@@ -733,18 +646,19 @@ export default function Leads() {
                         </div>
                     )}
                 </main>
-            </div>
+            </div >
 
             {/* Create Lead Dialog */}
-            <CreateLeadDialog
+            < CreateLeadDialog
                 open={showCreateDialog}
                 onOpenChange={setShowCreateDialog}
                 onSuccess={(newLead) => {
                     setLeads([...leads, newLead]);
                     setShowCreateDialog(false);
-                }}
+                }
+                }
             />
-        </div>
+        </div >
     );
 }
 
@@ -758,19 +672,13 @@ function CreateLeadDialog({
     onOpenChange: (open: boolean) => void;
     onSuccess: (lead: Lead) => void;
 }) {
-    const [formData, setFormData] = useState({
-        firstName: '',
-        lastName: '',
-        company: '',
-        title: '',
+    const [formData, setFormData] = useState<any>({
+        name: '',
         phone: '',
-        mobile: '',
         email: '',
-        leadSource: '',
-        leadStatus: 'Not Contacted',
-        industry: '',
-        country: '',
-        city: '',
+        lead_source: '',
+        lead_status: 'New',
+        lead_owner: 'Pranav A',
         description: ''
     });
 
@@ -779,29 +687,31 @@ function CreateLeadDialog({
 
         const newLead: Lead = {
             id: String(Date.now()),
-            ...formData,
-            leadScore: Math.floor(Math.random() * 40) + 60,
-            leadOwner: 'Pranav A',
-            createdTime: new Date().toISOString()
+            name: formData.name,
+            phone: formData.phone,
+            email: formData.email,
+            lead_source: formData.lead_source,
+            lead_status: formData.lead_status as Lead['lead_status'],
+            lead_score: Math.floor(Math.random() * 40) + 60,
+            lead_owner: formData.lead_owner,
+            created_at: new Date().toISOString(),
+            // optional fields left empty
+            converted: false
         };
 
         onSuccess(newLead);
 
         // Reset form
         setFormData({
-            firstName: '',
-            lastName: '',
-            company: '',
-            title: '',
+            name: '',
             phone: '',
-            mobile: '',
             email: '',
-            leadSource: '',
-            leadStatus: 'Not Contacted',
-            industry: '',
-            country: '',
+            lead_source: '',
+            lead_status: 'New',
+            lead_owner: 'Pranav A',
+            description: '',
             city: '',
-            description: ''
+            state: ''
         });
     };
 
@@ -822,38 +732,13 @@ function CreateLeadDialog({
                     <div>
                         <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Lead Identity</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="firstName">First Name</Label>
+                            <div className="col-span-2">
+                                <Label htmlFor="name">Full Name *</Label>
                                 <Input
-                                    id="firstName"
-                                    value={formData.firstName}
-                                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="lastName">Last Name *</Label>
-                                <Input
-                                    id="lastName"
-                                    value={formData.lastName}
-                                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                                    id="name"
+                                    value={formData.name}
+                                    onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                     required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="company">Company *</Label>
-                                <Input
-                                    id="company"
-                                    value={formData.company}
-                                    onChange={(e) => setFormData({ ...formData, company: e.target.value })}
-                                    required
-                                />
-                            </div>
-                            <div>
-                                <Label htmlFor="title">Title</Label>
-                                <Input
-                                    id="title"
-                                    value={formData.title}
-                                    onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                                 />
                             </div>
                         </div>
@@ -864,24 +749,16 @@ function CreateLeadDialog({
                         <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Communication</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="phone">Phone</Label>
+                                <Label htmlFor="phone">Phone *</Label>
                                 <Input
                                     id="phone"
                                     type="tel"
                                     value={formData.phone}
                                     onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                                    required
                                 />
                             </div>
                             <div>
-                                <Label htmlFor="mobile">Mobile</Label>
-                                <Input
-                                    id="mobile"
-                                    type="tel"
-                                    value={formData.mobile}
-                                    onChange={(e) => setFormData({ ...formData, mobile: e.target.value })}
-                                />
-                            </div>
-                            <div className="col-span-2">
                                 <Label htmlFor="email">Email</Label>
                                 <Input
                                     id="email"
@@ -898,49 +775,33 @@ function CreateLeadDialog({
                         <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Lead Details</h3>
                         <div className="grid grid-cols-2 gap-4">
                             <div>
-                                <Label htmlFor="leadSource">Lead Source</Label>
+                                <Label htmlFor="lead_source">Lead Source *</Label>
                                 <Select
-                                    value={formData.leadSource}
-                                    onValueChange={(value) => setFormData({ ...formData, leadSource: value })}
+                                    value={formData.lead_source}
+                                    onValueChange={(value: string) => setFormData({ ...formData, lead_source: value })}
                                 >
                                     <SelectTrigger>
                                         <SelectValue placeholder="Select source" />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {leadSources.map(source => (
+                                        {leadSources.map((source: string) => (
                                             <SelectItem key={source} value={source}>{source}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
                             </div>
                             <div>
-                                <Label htmlFor="leadStatus">Lead Status</Label>
+                                <Label htmlFor="lead_status">Lead Status</Label>
                                 <Select
-                                    value={formData.leadStatus}
-                                    onValueChange={(value) => setFormData({ ...formData, leadStatus: value })}
+                                    value={formData.lead_status}
+                                    onValueChange={(value: string) => setFormData({ ...formData, lead_status: value })}
                                 >
                                     <SelectTrigger>
                                         <SelectValue />
                                     </SelectTrigger>
                                     <SelectContent>
-                                        {leadStatuses.map(status => (
+                                        {leadStatuses.map((status: string) => (
                                             <SelectItem key={status} value={status}>{status}</SelectItem>
-                                        ))}
-                                    </SelectContent>
-                                </Select>
-                            </div>
-                            <div>
-                                <Label htmlFor="industry">Industry</Label>
-                                <Select
-                                    value={formData.industry}
-                                    onValueChange={(value) => setFormData({ ...formData, industry: value })}
-                                >
-                                    <SelectTrigger>
-                                        <SelectValue placeholder="Select industry" />
-                                    </SelectTrigger>
-                                    <SelectContent>
-                                        {industries.map(industry => (
-                                            <SelectItem key={industry} value={industry}>{industry}</SelectItem>
                                         ))}
                                     </SelectContent>
                                 </Select>
@@ -950,22 +811,22 @@ function CreateLeadDialog({
 
                     {/* Address */}
                     <div>
-                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Address Information</h3>
+                        <h3 className="font-semibold text-slate-900 mb-4 pb-2 border-b">Location Information</h3>
                         <div className="grid grid-cols-2 gap-4">
-                            <div>
-                                <Label htmlFor="country">Country</Label>
-                                <Input
-                                    id="country"
-                                    value={formData.country}
-                                    onChange={(e) => setFormData({ ...formData, country: e.target.value })}
-                                />
-                            </div>
                             <div>
                                 <Label htmlFor="city">City</Label>
                                 <Input
                                     id="city"
                                     value={formData.city}
                                     onChange={(e) => setFormData({ ...formData, city: e.target.value })}
+                                />
+                            </div>
+                            <div>
+                                <Label htmlFor="state">State</Label>
+                                <Input
+                                    id="state"
+                                    value={formData.state}
+                                    onChange={(e) => setFormData({ ...formData, state: e.target.value })}
                                 />
                             </div>
                         </div>
