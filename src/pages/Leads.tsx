@@ -32,115 +32,124 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
+// B2C Lead Interface (aligned with crm.leads schema)
 interface Lead {
     id: string;
-    firstName: string;
-    lastName: string;
-    company: string;
-    title: string;
+    name: string;
     phone: string;
-    mobile: string;
-    email: string;
-    leadSource: string;
-    leadSubSource?: string;
-    leadStatus: string;
-    leadScore: number;
-    ranking?: string;
-    tone?: string;
-    industry?: string;
-    annualRevenue?: number;
-    employees?: number;
-    rating?: number;
-    country?: string;
+    email?: string;
+
+    // Source Tracking
+    lead_source: string;
+    utm_source?: string;
+    utm_medium?: string;
+    utm_campaign?: string;
+    referral_code?: string;
+
+    // Lead Status
+    lead_status: 'New' | 'Contacted' | 'Qualified' | 'Not Interested' | 'Converted' | 'Junk';
+
+    // Lead Quality (AI-Driven)
+    lead_score: number;
+    buying_intent_keywords?: string[];
+
+    // Product Interest
+    interested_in_products?: string[];
+    budget_range?: string;
+
+    // Conversion Tracking
+    converted: boolean;
+    converted_at?: string;
+    converted_customer_id?: string;
+    converted_deal_id?: string;
+
+    // Location (Simple)
     city?: string;
-    leadOwner: string;
-    createdTime: string;
-    imageUrl?: string;
-    description?: string;
+    state?: string;
+
+    // Metadata
+    notes?: string;
+    lead_owner?: string;
+    created_at: string;
+    last_contacted_at?: string;
 }
+
 
 const mockLeads: Lead[] = [
     {
         id: '1',
-        firstName: 'John',
-        lastName: 'Doe',
-        company: 'Tech Corp',
-        title: 'CTO',
-        phone: '+1234567890',
-        mobile: '+1234567891',
-        email: 'john.doe@techcorp.com',
-        leadSource: 'Social Media',
-        leadSubSource: 'LinkedIn',
-        leadStatus: 'Qualified',
-        leadScore: 85,
-        ranking: 'Active',
-        tone: 'Interested',
-        industry: 'Technology',
-        annualRevenue: 5000000,
-        employees: 50,
-        rating: 4,
-        country: 'USA',
-        city: 'San Francisco',
-        leadOwner: 'Pranav A',
-        createdTime: '2026-01-15T10:30:00',
-        imageUrl: '/avatars/john.jpg'
+        name: 'Anjali Verma',
+        phone: '+919988776655',
+        email: 'anjali.v@gmail.com',
+        lead_source: 'WhatsApp Bot',
+        utm_source: 'whatsapp',
+        utm_campaign: 'summer_sale_2026',
+        lead_status: 'Qualified',
+        lead_score: 85,
+        buying_intent_keywords: ['buy now', 'interested', 'price'],
+        interested_in_products: ['Premium Package', 'Gold Membership'],
+        budget_range: '2000+',
+        converted: false,
+        city: 'Bangalore',
+        state: 'Karnataka',
+        lead_owner: 'Pranav A',
+        created_at: '2026-01-15T10:30:00',
+        last_contacted_at: '2026-01-17T14:20:00'
     },
     {
         id: '2',
-        firstName: 'Sarah',
-        lastName: 'Johnson',
-        company: 'Marketing Plus',
-        title: 'Marketing Director',
-        phone: '+1234567892',
-        mobile: '+1234567893',
-        email: 'sarah.j@marketingplus.com',
-        leadSource: 'Advertisement',
-        leadStatus: 'Pre-Qualified',
-        leadScore: 72,
-        tone: 'Eager',
-        industry: 'Marketing',
-        country: 'USA',
-        city: 'New York',
-        leadOwner: 'Pranav A',
-        createdTime: '2026-01-16T14:20:00'
+        name: 'Rajesh Kumar',
+        phone: '+918877665544',
+        email: 'rajesh.k@yahoo.com',
+        lead_source: 'Instagram DM',
+        utm_source: 'instagram',
+        utm_medium: 'social',
+        lead_status: 'Contacted',
+        lead_score: 72,
+        buying_intent_keywords: ['looking for', 'options'],
+        interested_in_products: ['Basic Package'],
+        budget_range: '1000-2000',
+        converted: false,
+        city: 'Mumbai',
+        state: 'Maharashtra',
+        lead_owner: 'Pranav A',
+        created_at: '2026-01-16T14:20:00',
+        last_contacted_at: '2026-01-16T15:00:00'
     },
     {
         id: '3',
-        firstName: 'Michael',
-        lastName: 'Chen',
-        company: 'Global Ventures',
-        title: 'VP Sales',
-        phone: '+1234567894',
-        mobile: '+1234567895',
-        email: 'mchen@globalventures.com',
-        leadSource: 'Referral',
-        leadStatus: 'Contacted',
-        leadScore: 91,
-        ranking: 'Acquired',
-        tone: 'Cool',
-        industry: 'Finance',
-        country: 'Singapore',
-        city: 'Singapore',
-        leadOwner: 'Pranav A',
-        createdTime: '2026-01-17T09:15:00'
+        name: 'Meera Shah',
+        phone: '+917766554433',
+        email: 'meera.shah@outlook.com',
+        lead_source: 'Referral Code',
+        referral_code: 'REF2026JAN',
+        lead_status: 'Qualified',
+        lead_score: 91,
+        buying_intent_keywords: ['ready to buy', 'payment', 'delivery'],
+        interested_in_products: ['Premium Package', 'Add-ons'],
+        budget_range: '2000+',
+        converted: true,
+        converted_at: '2026-01-17T16:30:00',
+        converted_customer_id: 'cust_001',
+        converted_deal_id: 'deal_001',
+        city: 'Pune',
+        state: 'Maharashtra',
+        lead_owner: 'Pranav A',
+        created_at: '2026-01-17T09:15:00',
+        last_contacted_at: '2026-01-17T16:00:00'
     }
 ];
 
 const leadSources = [
-    'Social Media', 'WhatsApp', 'Facebook', 'Instagram',
-    'Advertisement', 'Cold Call', 'Referral', 'Offline Store',
-    'Manual Upload', 'Sales Email Alias', 'Live Chat', 'Online Store'
+    'WhatsApp Bot', 'Instagram DM', 'Facebook Message', 'Google Ads',
+    'Referral Code', 'Website Chat', 'Marketplace Inquiry', 'Offline Event'
 ];
 
-const leadStatuses = [
-    'Attempted to Contact', 'Contact in Future', 'Contacted',
-    'Not Contacted', 'Pre-Qualified', 'Qualified', 'Not Qualified',
-    'Junk Lead', 'Lost Lead'
+const leadStatuses: Lead['lead_status'][] = [
+    'New', 'Contacted', 'Qualified', 'Not Interested', 'Converted', 'Junk'
 ];
 
-const rankings = ['Acquired', 'Active', 'Market Failed', 'Project Cancelled', 'Shut Down'];
-const tones = ['Cool', 'Eager', 'Interested', 'Anger'];
-const industries = ['Technology', 'Marketing', 'Finance', 'Healthcare', 'Manufacturing', 'Retail'];
+const budgetRanges = ['500-1000', '1000-2000', '2000+'];
 
 export default function Leads() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
