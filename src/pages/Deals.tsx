@@ -58,8 +58,8 @@ export default function Deals() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [deals, setDeals] = useState<Deal[]>(mockDeals);
-    const [selectedDeals, setSelectedDeals] = useState<string[]>([]);
+    const [deals] = useState<Deal[]>(mockDeals);
+    const [selectedDeals] = useState<string[]>([]);
 
     const [filters, setFilters] = useState({
         stage: 'all',

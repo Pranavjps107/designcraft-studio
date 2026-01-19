@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     CheckSquare, Plus, Filter, Search, MoreVertical,
     Clock, Flag, RefreshCw, Download, Eye, Edit, Trash2,
-    Bot, X, Calendar, User
+    Bot, Calendar, User
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -48,7 +48,7 @@ export default function Tasks() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [tasks, setTasks] = useState<Task[]>(mockTasks);
+    const [tasks] = useState<Task[]>(mockTasks);
     const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
 
     const [filters, setFilters] = useState({
@@ -313,7 +313,7 @@ export default function Tasks() {
                             <div className="flex-1 bg-slate-50 rounded-b-xl p-3 space-y-3 min-h-[500px] border-x border-b">
                                 {tasksByStatus[status]?.map((task) => {
                                     const relatedEntity = getRelatedEntity(task);
-                                    const overdue = isOverdue(task.due_date);
+                                    const overdue = task.due_date ? isOverdue(task.due_date) : false;
 
                                     return (
                                         <div
@@ -367,7 +367,7 @@ export default function Tasks() {
                                                 <div className="flex items-center gap-2 text-xs">
                                                     <Calendar className="h-3 w-3" />
                                                     <span className={overdue ? 'text-red-600 font-medium' : 'text-muted-foreground'}>
-                                                        {formatDate(task.due_date, 'short')}
+                                                        {task.due_date ? formatDate(task.due_date, 'short') : 'No due date'}
                                                         {overdue && ' (Overdue)'}
                                                     </span>
                                                 </div>
@@ -428,7 +428,7 @@ export default function Tasks() {
                             <tbody>
                                 {filteredTasks.map((task) => {
                                     const relatedEntity = getRelatedEntity(task);
-                                    const overdue = isOverdue(task.due_date);
+                                    const overdue = task.due_date ? isOverdue(task.due_date) : false;
 
                                     return (
                                         <tr key={task.id} className="border-b hover:bg-muted/50">
@@ -464,7 +464,7 @@ export default function Tasks() {
                                             </td>
                                             <td className="p-4">
                                                 <span className={overdue ? 'text-red-600 font-medium text-sm' : 'text-sm text-muted-foreground'}>
-                                                    {formatDate(task.due_date, 'short')}
+                                                    {task.due_date ? formatDate(task.due_date, 'short') : 'No due date'}
                                                     {overdue && ' (Overdue)'}
                                                 </span>
                                             </td>

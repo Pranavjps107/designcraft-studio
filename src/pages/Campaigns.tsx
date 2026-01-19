@@ -26,7 +26,7 @@ import { Checkbox } from '@/components/ui/checkbox';
 // Import B2C types and utilities
 import type { Campaign, CampaignType, CampaignStatus } from '@/types/crm.types';
 import { mockCampaigns } from '@/data/mockData';
-import { formatDate, getStatusColor } from '@/utils/crm.utils';
+
 
 const campaignTypes: CampaignType[] = ['Lead Generation', 'Nurture', 'Re-engagement', 'Win-Back', 'Promotional'];
 const campaignStatuses: CampaignStatus[] = ['Draft', 'Active', 'Paused', 'Completed'];
@@ -338,8 +338,8 @@ export default function Campaigns() {
                                                     <div className="font-medium text-slate-900">{campaign.campaign_name}</div>
                                                     <div className="text-sm text-slate-500 flex items-center gap-1 mt-1">
                                                         <Calendar className="w-3 h-3" />
-                                                        {new Date(campaign.start_date).toLocaleDateString()}
-                                                        {campaign.end_date && ` - ${new Date(campaign.end_date).toLocaleDateString()}`}
+                                                        {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'No start date'}
+                                                        {campaign.end_date && campaign.start_date && ` - ${new Date(campaign.end_date).toLocaleDateString()}`}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -439,8 +439,8 @@ export default function Campaigns() {
                                     </div>
 
                                     <div className="pt-3 border-t border-slate-100 text-xs text-slate-500">
-                                        {new Date(campaign.start_date).toLocaleDateString()}
-                                        {campaign.end_date && ` - ${new Date(campaign.end_date).toLocaleDateString()}`}
+                                        {campaign.start_date ? new Date(campaign.start_date).toLocaleDateString() : 'No start date'}
+                                        {campaign.end_date && campaign.start_date && ` - ${new Date(campaign.end_date).toLocaleDateString()}`}
                                     </div>
                                 </div>
                             ))}

@@ -575,7 +575,7 @@ export default function Leads() {
                                     </div>
 
                                     <div className="flex items-center justify-between mb-3">
-                                        <Badge className={getStatusColor(lead.lead_status)} variant="secondary">
+                                        <Badge className={getLeadStatusColor(lead.lead_status)} variant="secondary">
                                             {lead.lead_status}
                                         </Badge>
                                         <div className={`px-2 py-1 rounded-lg font-semibold text-sm ${getScoreColor(lead.lead_score)}`}>

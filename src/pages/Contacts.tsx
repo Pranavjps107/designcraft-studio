@@ -67,7 +67,7 @@ export default function Contacts() {
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+    const [customers] = useState<Customer[]>(mockCustomers);
     const [sortField, setSortField] = useState<keyof Customer>('created_at');
     const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
 
