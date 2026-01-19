@@ -3,7 +3,7 @@ import {
     Users, Plus, Filter, Download, Search, Grid, List,
     MoreVertical, Phone, Mail, Building2, MapPin,
     X, Edit, Trash2, Eye, MessageSquare, ChevronDown,
-    ArrowUpDown, RefreshCw, Send
+    ArrowUpDown, RefreshCw, Send, UserPlus
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -217,7 +217,7 @@ export default function Contacts() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-background">
+        <div className="h-full flex flex-col bg-background">
             {/* Header */}
             <header className="bg-card border-b border-border">
                 <div className="px-6 py-4">

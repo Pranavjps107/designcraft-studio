@@ -1,4 +1,3 @@
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Settings as SettingsIcon, ArrowUpRight, Info } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -21,7 +20,7 @@ export default function Dashboard() {
   ];
 
   return (
-    <DashboardLayout title="Agents">
+    <div className="h-full overflow-y-auto bg-background p-6">
       <div className="p-6">
         {/* Status Bar */}
         <div className="flex items-center gap-4 mb-8">
@@ -219,6 +218,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
-    </DashboardLayout>
+    </div>
   );
 }

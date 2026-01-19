@@ -8,7 +8,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import api, { Conversation, Message } from "@/lib/api";
-import { DashboardLayout } from "@/components/layout/DashboardLayout";
 
 // Mock data for demo
 const mockConversations: Conversation[] = [
@@ -159,241 +158,239 @@ export default function Conversations() {
   };
 
   return (
-    <DashboardLayout title="Conversations" hideTopBar>
-      <div className="h-[calc(100vh)] flex bg-background">
-        {/* Conversations List */}
-        <div className="w-80 border-r border-border flex flex-col bg-background">
-          <div className="p-4 border-b border-border">
-            <h2 className="text-lg font-semibold text-foreground mb-4">Conversations</h2>
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
-                placeholder="Search conversations..."
-                className="pl-9 h-9"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-            </div>
-            <div className="flex gap-2 mt-3">
-              {(['all', 'unread', 'archived'] as const).map((f) => (
-                <Button
-                  key={f}
-                  variant={filter === f ? "default" : "outline"}
-                  size="sm"
-                  onClick={() => setFilter(f)}
-                  className="capitalize text-xs h-8"
-                >
-                  {f}
-                </Button>
-              ))}
-            </div>
+    <div className="h-full flex bg-background">
+      {/* Conversations List */}
+      <div className="w-80 border-r border-border flex flex-col bg-background">
+        <div className="p-4 border-b border-border">
+          <h2 className="text-lg font-semibold text-foreground mb-4">Conversations</h2>
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Search conversations..."
+              className="pl-9 h-9"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+            />
           </div>
-
-          <div className="flex-1 overflow-y-auto">
-            {isLoading ? (
-              <div className="flex items-center justify-center h-32">
-                <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
-              </div>
-            ) : (
-              conversations.map((conversation) => (
-                <div
-                  key={conversation.id}
-                  onClick={() => {
-                    setSelectedConversation(conversation);
-                    loadMessages(conversation.id);
-                  }}
-                  className={cn(
-                    "p-4 border-b border-border cursor-pointer hover:bg-accent transition-colors",
-                    selectedConversation?.id === conversation.id && "bg-accent"
-                  )}
-                >
-                  <div className="flex items-start gap-3">
-                    <Avatar className="h-9 w-9">
-                      <AvatarFallback className="bg-muted text-muted-foreground text-sm">
-                        {getInitials(conversation.name)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center justify-between">
-                        <span className="font-medium text-sm text-foreground truncate">
-                          {conversation.name}
-                        </span>
-                        <span className="text-xs text-muted-foreground">
-                          {conversation.last_seen_at}
-                        </span>
-                      </div>
-                      <p className="text-sm text-muted-foreground truncate mt-0.5">
-                        {conversation.last_message}
-                      </p>
-                      {conversation.unread_count > 0 && (
-                        <Badge className="mt-1 text-xs h-5 badge-new">
-                          {conversation.unread_count} new
-                        </Badge>
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))
-            )}
+          <div className="flex gap-2 mt-3">
+            {(['all', 'unread', 'archived'] as const).map((f) => (
+              <Button
+                key={f}
+                variant={filter === f ? "default" : "outline"}
+                size="sm"
+                onClick={() => setFilter(f)}
+                className="capitalize text-xs h-8"
+              >
+                {f}
+              </Button>
+            ))}
           </div>
         </div>
 
-        {/* Chat Area */}
-        <div className="flex-1 flex flex-col">
-          {selectedConversation ? (
-            <>
-              {/* Chat Header */}
-              <div className="p-4 border-b border-border bg-background flex items-center justify-between">
-                <div className="flex items-center gap-3">
+        <div className="flex-1 overflow-y-auto">
+          {isLoading ? (
+            <div className="flex items-center justify-center h-32">
+              <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />
+            </div>
+          ) : (
+            conversations.map((conversation) => (
+              <div
+                key={conversation.id}
+                onClick={() => {
+                  setSelectedConversation(conversation);
+                  loadMessages(conversation.id);
+                }}
+                className={cn(
+                  "p-4 border-b border-border cursor-pointer hover:bg-accent transition-colors",
+                  selectedConversation?.id === conversation.id && "bg-accent"
+                )}
+              >
+                <div className="flex items-start gap-3">
                   <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-muted text-muted-foreground">
-                      {getInitials(selectedConversation.name)}
+                    <AvatarFallback className="bg-muted text-muted-foreground text-sm">
+                      {getInitials(conversation.name)}
                     </AvatarFallback>
                   </Avatar>
-                  <div>
-                    <h3 className="font-medium text-sm text-foreground">{selectedConversation.name}</h3>
-                    <p className="text-xs text-muted-foreground">{selectedConversation.phone}</p>
-                  </div>
-                </div>
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                      <MoreVertical className="h-4 w-4" />
-                    </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end">
-                    <DropdownMenuItem onClick={handleArchive}>
-                      <Archive className="h-4 w-4 mr-2" />
-                      Archive
-                    </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleExport}>
-                      <Download className="h-4 w-4 mr-2" />
-                      Export
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="text-destructive">
-                      <Ban className="h-4 w-4 mr-2" />
-                      Block Contact
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              </div>
-
-              {/* Messages */}
-              <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-accent/30">
-                {messages.map((message) => (
-                  <div
-                    key={message.id}
-                    className={cn(
-                      "flex",
-                      message.direction === "outbound" ? "justify-end" : "justify-start"
-                    )}
-                  >
-                    <div
-                      className={cn(
-                        "max-w-[70%] rounded-2xl px-4 py-2.5",
-                        message.direction === "outbound"
-                          ? "bg-foreground text-background rounded-br-md"
-                          : "bg-background text-foreground border border-border rounded-bl-md"
-                      )}
-                    >
-                      <p className="text-sm">{message.body}</p>
-                      <p className={cn(
-                        "text-xs mt-1",
-                        message.direction === "outbound" ? "text-background/70" : "text-muted-foreground"
-                      )}>
-                        {formatTime(message.created_at)}
-                      </p>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between">
+                      <span className="font-medium text-sm text-foreground truncate">
+                        {conversation.name}
+                      </span>
+                      <span className="text-xs text-muted-foreground">
+                        {conversation.last_seen_at}
+                      </span>
                     </div>
-                  </div>
-                ))}
-                <div ref={messagesEndRef} />
-              </div>
-
-              {/* Message Input */}
-              <div className="p-4 border-t border-border bg-background">
-                <div className="flex gap-3">
-                  <Input
-                    placeholder="Type your message..."
-                    value={newMessage}
-                    onChange={(e) => setNewMessage(e.target.value)}
-                    onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                    className="flex-1 h-10"
-                  />
-                  <Button onClick={handleSendMessage} disabled={isSending || !newMessage.trim()} className="h-10">
-                    {isSending ? (
-                      <Loader2 className="h-4 w-4 animate-spin" />
-                    ) : (
-                      <Send className="h-4 w-4" />
+                    <p className="text-sm text-muted-foreground truncate mt-0.5">
+                      {conversation.last_message}
+                    </p>
+                    {conversation.unread_count > 0 && (
+                      <Badge className="mt-1 text-xs h-5 badge-new">
+                        {conversation.unread_count} new
+                      </Badge>
                     )}
-                  </Button>
+                  </div>
                 </div>
               </div>
-            </>
-          ) : (
-            <div className="flex-1 flex items-center justify-center bg-accent/30">
-              <div className="text-center">
-                <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-sm font-medium text-foreground">Select a conversation</h3>
-                <p className="text-sm text-muted-foreground">Choose a conversation from the list</p>
-              </div>
-            </div>
+            ))
           )}
         </div>
+      </div>
 
-        {/* Contact Details Sidebar */}
-        {selectedConversation && (
-          <div className="w-64 border-l border-border bg-background p-4">
-            <div className="text-center mb-6">
-              <Avatar className="h-16 w-16 mx-auto mb-3">
-                <AvatarFallback className="bg-muted text-muted-foreground text-xl">
-                  {getInitials(selectedConversation.name)}
-                </AvatarFallback>
-              </Avatar>
-              <h3 className="font-medium text-foreground">{selectedConversation.name}</h3>
-              <p className="text-sm text-muted-foreground">{selectedConversation.phone}</p>
-            </div>
-
-            <div className="space-y-3">
-              <div className="flex items-center gap-3 text-sm">
-                <Phone className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">{selectedConversation.phone}</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <Mail className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">contact@email.com</span>
-              </div>
-              <div className="flex items-center gap-3 text-sm">
-                <MapPin className="h-4 w-4 text-muted-foreground" />
-                <span className="text-foreground">San Francisco, CA</span>
-              </div>
-            </div>
-
-            <div className="mt-6 pt-6 border-t border-border">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Statistics</h4>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="bg-accent rounded-lg p-3 text-center">
-                  <MessageCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-lg font-medium text-foreground">47</p>
-                  <p className="text-xs text-muted-foreground">Messages</p>
-                </div>
-                <div className="bg-accent rounded-lg p-3 text-center">
-                  <Users className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
-                  <p className="text-lg font-medium text-foreground">12</p>
-                  <p className="text-xs text-muted-foreground">Conversations</p>
+      {/* Chat Area */}
+      <div className="flex-1 flex flex-col">
+        {selectedConversation ? (
+          <>
+            {/* Chat Header */}
+            <div className="p-4 border-b border-border bg-background flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-muted text-muted-foreground">
+                    {getInitials(selectedConversation.name)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-medium text-sm text-foreground">{selectedConversation.name}</h3>
+                  <p className="text-xs text-muted-foreground">{selectedConversation.phone}</p>
                 </div>
               </div>
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button variant="ghost" size="icon" className="h-8 w-8">
+                    <MoreVertical className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <DropdownMenuItem onClick={handleArchive}>
+                    <Archive className="h-4 w-4 mr-2" />
+                    Archive
+                  </DropdownMenuItem>
+                  <DropdownMenuItem onClick={handleExport}>
+                    <Download className="h-4 w-4 mr-2" />
+                    Export
+                  </DropdownMenuItem>
+                  <DropdownMenuItem className="text-destructive">
+                    <Ban className="h-4 w-4 mr-2" />
+                    Block Contact
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
 
-            <div className="mt-6">
-              <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Tags</h4>
-              <div className="flex flex-wrap gap-2">
-                <Badge variant="secondary" className="text-xs">VIP Customer</Badge>
-                <Badge variant="secondary" className="text-xs">Support</Badge>
+            {/* Messages */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3 bg-accent/30">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "flex",
+                    message.direction === "outbound" ? "justify-end" : "justify-start"
+                  )}
+                >
+                  <div
+                    className={cn(
+                      "max-w-[70%] rounded-2xl px-4 py-2.5",
+                      message.direction === "outbound"
+                        ? "bg-foreground text-background rounded-br-md"
+                        : "bg-background text-foreground border border-border rounded-bl-md"
+                    )}
+                  >
+                    <p className="text-sm">{message.body}</p>
+                    <p className={cn(
+                      "text-xs mt-1",
+                      message.direction === "outbound" ? "text-background/70" : "text-muted-foreground"
+                    )}>
+                      {formatTime(message.created_at)}
+                    </p>
+                  </div>
+                </div>
+              ))}
+              <div ref={messagesEndRef} />
+            </div>
+
+            {/* Message Input */}
+            <div className="p-4 border-t border-border bg-background">
+              <div className="flex gap-3">
+                <Input
+                  placeholder="Type your message..."
+                  value={newMessage}
+                  onChange={(e) => setNewMessage(e.target.value)}
+                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
+                  className="flex-1 h-10"
+                />
+                <Button onClick={handleSendMessage} disabled={isSending || !newMessage.trim()} className="h-10">
+                  {isSending ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Send className="h-4 w-4" />
+                  )}
+                </Button>
               </div>
+            </div>
+          </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center bg-accent/30">
+            <div className="text-center">
+              <MessageCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+              <h3 className="text-sm font-medium text-foreground">Select a conversation</h3>
+              <p className="text-sm text-muted-foreground">Choose a conversation from the list</p>
             </div>
           </div>
         )}
       </div>
-    </DashboardLayout>
+
+      {/* Contact Details Sidebar */}
+      {selectedConversation && (
+        <div className="w-64 border-l border-border bg-background p-4">
+          <div className="text-center mb-6">
+            <Avatar className="h-16 w-16 mx-auto mb-3">
+              <AvatarFallback className="bg-muted text-muted-foreground text-xl">
+                {getInitials(selectedConversation.name)}
+              </AvatarFallback>
+            </Avatar>
+            <h3 className="font-medium text-foreground">{selectedConversation.name}</h3>
+            <p className="text-sm text-muted-foreground">{selectedConversation.phone}</p>
+          </div>
+
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 text-sm">
+              <Phone className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">{selectedConversation.phone}</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <Mail className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">contact@email.com</span>
+            </div>
+            <div className="flex items-center gap-3 text-sm">
+              <MapPin className="h-4 w-4 text-muted-foreground" />
+              <span className="text-foreground">San Francisco, CA</span>
+            </div>
+          </div>
+
+          <div className="mt-6 pt-6 border-t border-border">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Statistics</h4>
+            <div className="grid grid-cols-2 gap-3">
+              <div className="bg-accent rounded-lg p-3 text-center">
+                <MessageCircle className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                <p className="text-lg font-medium text-foreground">47</p>
+                <p className="text-xs text-muted-foreground">Messages</p>
+              </div>
+              <div className="bg-accent rounded-lg p-3 text-center">
+                <Users className="h-4 w-4 text-muted-foreground mx-auto mb-1" />
+                <p className="text-lg font-medium text-foreground">12</p>
+                <p className="text-xs text-muted-foreground">Conversations</p>
+              </div>
+            </div>
+          </div>
+
+          <div className="mt-6">
+            <h4 className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-3">Tags</h4>
+            <div className="flex flex-wrap gap-2">
+              <Badge variant="secondary" className="text-xs">VIP Customer</Badge>
+              <Badge variant="secondary" className="text-xs">Support</Badge>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
