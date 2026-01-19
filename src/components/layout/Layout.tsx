@@ -7,7 +7,7 @@ import {
     BookOpen,
     Plug,
     Settings as SettingsIcon,
-    UserCircle,
+    
     Target,
     DollarSign,
     CheckSquare,

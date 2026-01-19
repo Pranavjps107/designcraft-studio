@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Mail, Eye, EyeOff, Loader2 } from "lucide-react";
+import { Eye, EyeOff, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -51,55 +51,31 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex">
-      {/* Left Panel - Branding */}
-      <div className="hidden lg:flex flex-1 bg-gradient-to-br from-primary to-primary/80 p-12 flex-col justify-center items-center text-primary-foreground">
-        <div className="flex items-center gap-3 mb-12">
-          <div className="w-12 h-12 bg-card rounded-xl flex items-center justify-center">
-            <Mail className="h-6 w-6 text-primary" />
-          </div>
-          <span className="text-2xl font-bold">ChatBot AI</span>
+    <div className="min-h-screen flex items-center justify-center bg-background p-6">
+      <div className="w-full max-w-sm">
+        {/* Logo */}
+        <div className="text-center mb-8">
+          <span className="text-2xl font-bold text-foreground">IIElevenLabs</span>
         </div>
 
-        <div className="w-96 h-96 bg-primary-foreground/10 rounded-3xl backdrop-blur-sm flex items-center justify-center relative overflow-hidden mb-12">
-          <div className="text-8xl opacity-20">🤖</div>
-          <div className="absolute top-16 left-10 bg-card text-foreground rounded-2xl px-4 py-3 text-sm shadow-lg max-w-[180px]">
-            Hi! How can I help you today?
-          </div>
-          <div className="absolute bottom-20 right-10 bg-primary text-primary-foreground rounded-2xl px-4 py-3 text-sm shadow-lg max-w-[180px]">
-            I need support with my order
-          </div>
-        </div>
-
-        <h2 className="text-2xl font-semibold text-center mb-4">
-          Automate Customer Conversations
-        </h2>
-        <p className="text-center text-primary-foreground/80 max-w-md">
-          Connect your WhatsApp Business account and start managing AI-powered
-          conversations at scale
-        </p>
-      </div>
-
-      {/* Right Panel - Login Form */}
-      <div className="flex-1 flex items-center justify-center p-8 bg-card">
-        <div className="w-full max-w-md">
-          <div className="mb-10">
-            <h1 className="text-3xl font-bold text-foreground mb-2">
+        <div className="bg-card border border-border rounded-xl p-8">
+          <div className="mb-6">
+            <h1 className="text-xl font-semibold text-foreground mb-1">
               Welcome back
             </h1>
-            <p className="text-muted-foreground">
+            <p className="text-sm text-muted-foreground">
               Sign in to your account to continue
             </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">Email address</Label>
+              <Label htmlFor="email" className="text-sm font-medium">Email address</Label>
               <Input
                 id="email"
                 type="email"
                 placeholder="you@company.com"
-                className="h-12"
+                className="h-10"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 disabled={isLoading}
@@ -107,13 +83,13 @@ export default function Login() {
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password" className="text-sm font-medium">Password</Label>
               <div className="relative">
                 <Input
                   id="password"
                   type={showPassword ? "text" : "password"}
                   placeholder="Enter your password"
-                  className="h-12 pr-10"
+                  className="h-10 pr-10"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   disabled={isLoading}
@@ -124,9 +100,9 @@ export default function Login() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground"
                 >
                   {showPassword ? (
-                    <EyeOff className="h-5 w-5" />
+                    <EyeOff className="h-4 w-4" />
                   ) : (
-                    <Eye className="h-5 w-5" />
+                    <Eye className="h-4 w-4" />
                   )}
                 </button>
               </div>
@@ -139,20 +115,20 @@ export default function Login() {
                   checked={rememberMe}
                   onCheckedChange={(checked) => setRememberMe(!!checked)}
                 />
-                <Label htmlFor="remember" className="text-sm cursor-pointer">
+                <Label htmlFor="remember" className="text-sm cursor-pointer text-muted-foreground">
                   Remember me
                 </Label>
               </div>
               <button
                 type="button"
                 onClick={handleForgotPassword}
-                className="text-sm font-medium text-primary hover:underline"
+                className="text-sm font-medium text-foreground hover:underline"
               >
                 Forgot password?
               </button>
             </div>
 
-            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
+            <Button type="submit" className="w-full h-10" disabled={isLoading}>
               {isLoading ? (
                 <>
                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
@@ -163,7 +139,7 @@ export default function Login() {
               )}
             </Button>
 
-            <div className="relative">
+            <div className="relative my-4">
               <div className="absolute inset-0 flex items-center">
                 <span className="w-full border-t border-border" />
               </div>
@@ -172,8 +148,8 @@ export default function Login() {
               </div>
             </div>
 
-            <Button variant="outline" className="w-full h-12 text-base gap-3" type="button">
-              <svg width="20" height="20" viewBox="0 0 20 20" fill="none">
+            <Button variant="outline" className="w-full h-10 gap-3" type="button">
+              <svg width="16" height="16" viewBox="0 0 20 20" fill="none">
                 <path
                   d="M19.6 10.227c0-.709-.064-1.39-.182-2.045H10v3.868h5.382a4.6 4.6 0 01-1.996 3.018v2.51h3.232c1.891-1.742 2.982-4.305 2.982-7.35z"
                   fill="#4285F4"
@@ -194,14 +170,14 @@ export default function Login() {
               Continue with Google
             </Button>
           </form>
-
-          <p className="text-center text-sm text-muted-foreground mt-8">
-            Don't have an account?{" "}
-            <Link to="/signup" className="font-semibold text-primary hover:underline">
-              Sign up
-            </Link>
-          </p>
         </div>
+
+        <p className="text-center text-sm text-muted-foreground mt-6">
+          Don't have an account?{" "}
+          <Link to="/signup" className="font-medium text-foreground hover:underline">
+            Sign up
+          </Link>
+        </p>
       </div>
     </div>
   );

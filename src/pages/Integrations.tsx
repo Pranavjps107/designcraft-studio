@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
-import { MessageCircle, ShoppingBag, Zap, Mail, CreditCard, Database, Check, X, Settings, Loader2, ExternalLink, RefreshCw } from "lucide-react";
+import { MessageCircle, ShoppingBag, Zap, Mail, CreditCard, Database, Check, Settings, Loader2, ExternalLink, RefreshCw } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Switch } from "@/components/ui/switch";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -9,7 +9,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import api, { Integration } from "@/lib/api";
-import { cn } from "@/lib/utils";
+
 
 // Mock integrations
 const mockIntegrations: Integration[] = [

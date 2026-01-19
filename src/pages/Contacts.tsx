@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
     Users, Plus, Filter, Download, Search, Grid, List,
-    MoreVertical, Phone, Mail, Building2, Calendar, MapPin,
-    X, Edit, Trash2, Eye, MessageSquare, User, ChevronDown,
-    ArrowUpDown, RefreshCw, UserPlus, Send
+    MoreVertical, Phone, Mail, Building2, MapPin,
+    X, Edit, Trash2, Eye, MessageSquare, ChevronDown,
+    ArrowUpDown, RefreshCw, Send
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
