@@ -1,91 +1,224 @@
-import { LayoutDashboard, TrendingUp, Users, MessageSquare } from 'lucide-react';
+import { DashboardLayout } from "@/components/layout/DashboardLayout";
+import { Settings as SettingsIcon, ArrowUpRight, Info } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 export default function Dashboard() {
-    return (
-        <div className="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
-                    <p className="text-slate-600">Welcome back! Here's your overview.</p>
-                </div>
+  const stats = [
+    { label: "Number of calls", value: "0", underline: true },
+    { label: "Average duration", value: "0:00" },
+    { label: "Total cost", value: "0", suffix: "credits" },
+    { label: "Average cost", value: "0", suffix: "credits/call" },
+    { label: "Total LLM cost", value: "$0" },
+    { label: "Average LLM cost", value: "$0", suffix: "/min" },
+  ];
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <MessageSquare className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +12.5%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">1,234</h3>
-                        <p className="text-sm text-slate-600">Total Conversations</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-green-50 rounded-lg">
-                                <Users className="w-6 h-6 text-green-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +8.2%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">567</h3>
-                        <p className="text-sm text-slate-600">Active Contacts</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-purple-50 rounded-lg">
-                                <TrendingUp className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +15.1%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">89</h3>
-                        <p className="text-sm text-slate-600">Active Leads</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-amber-50 rounded-lg">
-                                <LayoutDashboard className="w-6 h-6 text-amber-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +5.7%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">23</h3>
-                        <p className="text-sm text-slate-600">Open Deals</p>
-                    </div>
-                </div>
-
-                {/* Welcome Message */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-8 text-white">
-                    <h2 className="text-2xl font-bold mb-2">Welcome to ChatBot AI CRM</h2>
-                    <p className="text-blue-100 mb-4">
-                        Manage your leads, contacts, deals, and tasks all in one place.
-                    </p>
-                    <div className="flex gap-4">
-                        <a
-                            href="/leads"
-                            className="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
-                        >
-                            View Leads
-                        </a>
-                        <a
-                            href="/deals"
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-400 transition-colors"
-                        >
-                            View Deals
-                        </a>
-                    </div>
-                </div>
-            </div>
+  return (
+    <DashboardLayout title="Agents">
+      <div className="p-6">
+        {/* Status Bar */}
+        <div className="flex items-center gap-4 mb-8">
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-card border border-border rounded-full text-sm">
+            <span className="w-2 h-2 rounded-full bg-chart-2" />
+            Active calls: 0
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="badge-new">New</span>
+            <button className="text-sm text-muted-foreground hover:text-foreground flex items-center gap-1">
+              View new features
+              <ArrowUpRight className="h-3 w-3" />
+            </button>
+          </div>
+          <div className="ml-auto">
+            <Button variant="ghost" size="icon" className="h-8 w-8">
+              <SettingsIcon className="h-4 w-4 text-muted-foreground" />
+            </Button>
+          </div>
         </div>
-    );
+
+        {/* Welcome Section */}
+        <div className="mb-8">
+          <p className="text-sm text-muted-foreground mb-1">A.'s Workspace</p>
+          <h1 className="text-3xl font-semibold text-foreground">Good afternoon, A.</h1>
+        </div>
+
+        {/* Filters */}
+        <div className="flex items-center gap-3 mb-6">
+          <Select defaultValue="all">
+            <SelectTrigger className="w-32 h-9">
+              <SelectValue placeholder="All agents" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All agents</SelectItem>
+            </SelectContent>
+          </Select>
+          <Select defaultValue="month">
+            <SelectTrigger className="w-32 h-9">
+              <SelectValue placeholder="Last month" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="week">Last week</SelectItem>
+              <SelectItem value="month">Last month</SelectItem>
+              <SelectItem value="year">Last year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Stats Row */}
+        <div className="grid grid-cols-6 gap-0 border-b border-border mb-8">
+          {stats.map((stat, index) => (
+            <div key={index} className="py-4 pr-6">
+              <p className="text-xs text-muted-foreground mb-1">{stat.label}</p>
+              <p className={`text-xl font-medium text-foreground ${stat.underline ? 'border-b-2 border-foreground inline-block' : ''}`}>
+                {stat.value}
+                {stat.suffix && <span className="text-xs text-muted-foreground ml-1">{stat.suffix}</span>}
+              </p>
+            </div>
+          ))}
+        </div>
+
+        {/* Chart Placeholder */}
+        <div className="relative h-64 mb-6">
+          <div className="absolute left-0 top-0 text-xs text-muted-foreground">2</div>
+          <div className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">1</div>
+          <div className="absolute left-0 bottom-0 text-xs text-muted-foreground">0</div>
+          
+          <div className="ml-8 h-full border-l border-b border-border relative">
+            {/* Chart line */}
+            <div className="absolute bottom-0 left-0 right-0 h-px bg-chart-1" />
+            
+            {/* Data point */}
+            <div className="absolute bottom-0 right-1/4 w-2 h-2 rounded-full bg-chart-1 border-2 border-background" />
+            
+            {/* X-axis labels */}
+            <div className="absolute -bottom-6 left-0 text-xs text-muted-foreground">Dec 20</div>
+            <div className="absolute -bottom-6 right-0 text-xs text-muted-foreground">Jan 20</div>
+          </div>
+        </div>
+
+        {/* View calls button */}
+        <div className="flex justify-end mb-8">
+          <Button variant="outline" size="sm" className="gap-2">
+            View calls
+            <ArrowUpRight className="h-3 w-3" />
+          </Button>
+        </div>
+
+        {/* Two Column Cards */}
+        <div className="grid grid-cols-2 gap-6">
+          {/* Overall success rate */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center gap-2 mb-2">
+                <h3 className="text-sm font-medium text-foreground">Overall success rate</h3>
+                <Info className="h-4 w-4 text-muted-foreground" />
+              </div>
+              <p className="text-3xl font-semibold text-foreground mb-6">0%</p>
+              
+              <div className="h-40 relative">
+                <div className="absolute left-0 top-0 text-xs text-muted-foreground">100%</div>
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 text-xs text-muted-foreground">50%</div>
+                <div className="absolute left-0 bottom-0 text-xs text-muted-foreground">0%</div>
+                
+                <div className="ml-10 h-full border-b border-border relative">
+                  <div className="absolute bottom-0 left-0 right-0 h-px bg-chart-2" />
+                  <div className="absolute bottom-0 left-1/4 w-2 h-2 rounded-full bg-chart-2 border-2 border-background" />
+                </div>
+                
+                <div className="flex justify-between mt-2 ml-10">
+                  <span className="text-xs text-muted-foreground">Dec 20</span>
+                  <span className="text-xs text-muted-foreground">Jan 20</span>
+                </div>
+              </div>
+
+              <div className="mt-6 flex items-center gap-3">
+                <span className="text-sm text-muted-foreground">Filter</span>
+                <Select defaultValue="success">
+                  <SelectTrigger className="w-28 h-8 text-sm">
+                    <SelectValue placeholder="Success" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="success">Success</SelectItem>
+                    <SelectItem value="failure">Failure</SelectItem>
+                    <SelectItem value="unknown">Unknown</SelectItem>
+                  </SelectContent>
+                </Select>
+                <Button variant="outline" size="sm" className="ml-auto gap-2">
+                  View calls
+                  <ArrowUpRight className="h-3 w-3" />
+                </Button>
+              </div>
+
+              {/* Legend */}
+              <div className="mt-4 flex flex-col gap-1 text-sm">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-muted-foreground" />
+                  <span className="text-muted-foreground">Unknown</span>
+                  <span className="ml-auto">0 (0%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-destructive" />
+                  <span className="text-muted-foreground">Failure</span>
+                  <span className="ml-auto">0 (0%)</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-chart-2" />
+                  <span className="text-muted-foreground">Success</span>
+                  <span className="ml-auto">0 (0%)</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Most called agents */}
+          <Card>
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <h3 className="text-sm font-medium text-foreground">Most called agents</h3>
+                  <Info className="h-4 w-4 text-muted-foreground" />
+                </div>
+                <Select defaultValue="calls">
+                  <SelectTrigger className="w-20 h-8 text-sm">
+                    <SelectValue placeholder="Calls" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="calls">Calls</SelectItem>
+                    <SelectItem value="duration">Duration</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              
+              <div className="flex items-center justify-center h-48 text-center">
+                <p className="text-sm text-muted-foreground">No agent data has been collected</p>
+              </div>
+
+              <div className="flex justify-end mt-4">
+                <Button variant="ghost" size="sm" className="text-muted-foreground" disabled>
+                  Show all
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+
+        {/* Language Section */}
+        <Card className="mt-6">
+          <CardContent className="p-6">
+            <div className="flex items-center gap-2">
+              <h3 className="text-sm font-medium text-foreground">Language</h3>
+              <Info className="h-4 w-4 text-muted-foreground" />
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    </DashboardLayout>
+  );
 }

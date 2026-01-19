@@ -1,5 +1,4 @@
-import { Search, Bell, User } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { MessageCircle, HelpCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface TopBarProps {
@@ -8,29 +7,35 @@ interface TopBarProps {
 
 export function TopBar({ title }: TopBarProps) {
   return (
-    <header className="h-16 bg-card border-b border-border px-8 flex items-center justify-between sticky top-0 z-10">
-      {title && (
-        <h2 className="text-sm font-semibold text-foreground">{title}</h2>
-      )}
+    <header className="h-14 bg-background border-b border-border px-6 flex items-center justify-between sticky top-0 z-10">
+      <div className="flex items-center gap-3">
+        {title && (
+          <>
+            <div className="w-5 h-5 border border-border rounded flex items-center justify-center">
+              <div className="w-3 h-3 border border-muted-foreground rounded-sm" />
+            </div>
+            <h2 className="text-sm font-medium text-foreground">{title}</h2>
+          </>
+        )}
+      </div>
       
-      <div className="flex items-center gap-4 ml-auto">
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search..."
-            className="w-72 pl-9 h-10 bg-background"
-          />
+      <div className="flex items-center gap-2">
+        <Button variant="outline" size="sm" className="text-sm font-medium">
+          Feedback
+        </Button>
+        <Button variant="outline" size="sm" className="text-sm font-medium">
+          Docs
+        </Button>
+        <Button variant="outline" size="sm" className="text-sm font-medium gap-2">
+          <MessageCircle className="h-4 w-4" />
+          Talk to EI
+        </Button>
+        <Button variant="ghost" size="icon" className="h-8 w-8">
+          <HelpCircle className="h-4 w-4 text-muted-foreground" />
+        </Button>
+        <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
+          A
         </div>
-        
-        <Button variant="ghost" size="icon" className="relative">
-          <Bell className="h-5 w-5 text-muted-foreground" />
-          <span className="absolute top-2 right-2 w-2 h-2 bg-destructive rounded-full" />
-        </Button>
-        
-        <Button variant="ghost" size="icon">
-          <User className="h-5 w-5 text-muted-foreground" />
-        </Button>
       </div>
     </header>
   );

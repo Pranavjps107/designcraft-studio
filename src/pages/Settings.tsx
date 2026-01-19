@@ -12,7 +12,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { toast } from "sonner";
 import api, { UserProfile, NotificationPreferences, TeamMember } from "@/lib/api";
-import { cn } from "@/lib/utils";
+
 
 // Mock data
 const mockProfile: UserProfile = {
@@ -71,7 +71,7 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      await api.updateProfile({ name: profile.name, email: profile.email });
+      await api.updateUserProfile({ name: profile.name, email: profile.email });
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -119,7 +119,7 @@ export default function Settings() {
     }
 
     try {
-      await api.inviteTeamMember(inviteEmail, inviteRole);
+      await api.inviteTeamMember(profile.tenant.id, inviteEmail, inviteRole);
       toast.success("Invitation sent!");
       setShowInvite(false);
       setInviteEmail("");

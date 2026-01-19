@@ -279,12 +279,14 @@ class APIClient {
     company?: string;
     phone?: string;
   }): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse>(`${AUTH_BASE_URL}/v1/auth/register`, {
+    const response = await this.request<AuthResponse & { token?: string }>(`${AUTH_BASE_URL}/v1/auth/register`, {
       method: 'POST',
       body: JSON.stringify(data),
     });
 
-    if (response.token) {
+    if (response.access_token) {
+      this.setToken(response.access_token);
+    } else if (response.token) {
       this.setToken(response.token);
     }
 
