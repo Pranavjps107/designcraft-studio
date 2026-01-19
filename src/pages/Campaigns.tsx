@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     Megaphone, Plus, Filter, Download, Search, Grid, List,
     MoreVertical, TrendingUp, Users, MessageSquare, X,
-    ChevronDown, RefreshCw, Target
+    ChevronDown, RefreshCw, Calendar, Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -154,7 +154,6 @@ export default function Campaigns() {
 
     const totalSent = filteredCampaigns.reduce((sum, c) => sum + c.total_sent, 0);
     const totalDelivered = filteredCampaigns.reduce((sum, c) => sum + c.total_delivered, 0);
-    const totalReplied = filteredCampaigns.reduce((sum, c) => sum + c.total_replied, 0);
     const avgConversion = filteredCampaigns.length > 0
         ? filteredCampaigns.reduce((sum, c) => sum + c.conversion_rate, 0) / filteredCampaigns.length
         : 0;
