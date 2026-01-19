@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
     Users, Plus, Filter, Download, Search, Grid, List,
-    MoreVertical, Phone, Mail, MapPin, TrendingUp, TrendingDown,
+    MoreVertical, Phone, Mail, MapPin, TrendingUp,
     X, Edit, Trash2, Eye, MessageSquare, ChevronDown,
-    ArrowUpDown, RefreshCw, ShoppingBag, DollarSign, Calendar,
+    ArrowUpDown, RefreshCw, ShoppingBag, DollarSign,
     AlertTriangle, Star, Package
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -167,7 +167,6 @@ const customerSources = [
 
 const customerStatuses: Customer['customer_status'][] = ['New', 'Active', 'Inactive', 'Churned', 'VIP'];
 const churnRiskLevels: Customer['churn_risk'][] = ['Low', 'Medium', 'High'];
-const customerTones: NonNullable<Customer['customer_tone']>[] = ['Friendly', 'Neutral', 'Frustrated', 'Angry'];
 
 export default function Customers() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -175,7 +174,7 @@ export default function Customers() {
     const [showFilterPanel, setShowFilterPanel] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [selectedCustomers, setSelectedCustomers] = useState<string[]>([]);
-    const [customers, setCustomers] = useState<Customer[]>(mockCustomers);
+    const [customers] = useState<Customer[]>(mockCustomers);
 
     const [filters, setFilters] = useState({
         customerSource: 'all',
@@ -317,11 +316,14 @@ export default function Customers() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
-                                {Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== '') && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all" && v !== "") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -836,7 +838,10 @@ export default function Customers() {
                             <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No customers found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== '')
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all" && v !== "") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Get started by adding your first customer'}
                             </p>

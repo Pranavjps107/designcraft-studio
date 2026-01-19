@@ -34,7 +34,7 @@ export default function SignUp() {
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const password = e.target.value;
     setFormData({ ...formData, password });
-    
+
     if (password.length === 0) {
       setPasswordStrength(null);
     } else if (password.length < 6) {
@@ -98,9 +98,9 @@ export default function SignUp() {
           <Label htmlFor="fullname" className="text-sm font-medium">
             Full Name
           </Label>
-          <Input 
-            id="fullname" 
-            placeholder="John Doe" 
+          <Input
+            id="fullname"
+            placeholder="John Doe"
             className="h-10"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}
@@ -184,9 +184,9 @@ export default function SignUp() {
           <Label htmlFor="company" className="text-sm font-medium">
             Company Name
           </Label>
-          <Input 
-            id="company" 
-            placeholder="Acme Inc." 
+          <Input
+            id="company"
+            placeholder="Acme Inc."
             className="h-10"
             value={formData.company}
             onChange={(e) => setFormData({ ...formData, company: e.target.value })}
@@ -195,9 +195,9 @@ export default function SignUp() {
 
         <div className="space-y-2">
           <Label htmlFor="website" className="text-sm font-medium">Website</Label>
-          <Input 
-            id="website" 
-            placeholder="https://yourcompany.com" 
+          <Input
+            id="website"
+            placeholder="https://yourcompany.com"
             className="h-10"
             value={formData.website}
             onChange={(e) => setFormData({ ...formData, website: e.target.value })}
@@ -221,9 +221,9 @@ export default function SignUp() {
 
         <div className="space-y-2">
           <Label htmlFor="phone" className="text-sm font-medium">Phone Number</Label>
-          <Input 
-            id="phone" 
-            placeholder="+1234567890" 
+          <Input
+            id="phone"
+            placeholder="+1234567890"
             className="h-10"
             value={formData.phone}
             onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
@@ -260,8 +260,8 @@ export default function SignUp() {
           </div>
         </div>
 
-        <Button 
-          variant="outline" 
+        <Button
+          variant="outline"
           className="w-full h-10"
           onClick={handleCompleteSetup}
           disabled={isLoading}
@@ -277,7 +277,7 @@ export default function SignUp() {
       <div className="w-full max-w-sm">
         {/* Logo */}
         <div className="text-center mb-8">
-          <span className="text-2xl font-bold text-foreground">IIElevenLabs</span>
+          <span className="text-2xl font-bold text-foreground">DesignCraft Studio</span>
         </div>
 
         <div className="bg-card border border-border rounded-xl p-8">
@@ -337,7 +337,7 @@ export default function SignUp() {
                   Continue
                 </Button>
               ) : (
-                <Button 
+                <Button
                   type="button"
                   className="flex-[2] h-10"
                   onClick={handleCompleteSetup}

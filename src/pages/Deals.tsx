@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import {
     DollarSign, Plus, Filter, Search, Grid, List, MoreVertical,
-    TrendingUp, Calendar, User, Building2, X, RefreshCw, Download,
-    ChevronDown, Eye, Edit, Trash2, Phone, Mail, ArrowUpDown, Target
+    Calendar, User, Building2, X, RefreshCw, Download,
+    ChevronDown, Eye, Edit, Trash2, ArrowUpDown, Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -257,11 +257,14 @@ export default function Deals() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filter
-                                {Object.values(filters).some(v => v !== 'all' && v !== '' && v !== 0) && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all" && v !== "") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -740,7 +743,10 @@ export default function Deals() {
                             <DollarSign className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No deals found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== '' && v !== 0)
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all" && v !== "") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Get started by creating your first deal'}
                             </p>

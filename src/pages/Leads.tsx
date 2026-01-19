@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     Users, Plus, Filter, Download, Search, Grid, List,
     MoreVertical, Phone, Mail, TrendingUp,
-    Star, Edit, Trash2, Eye, MessageSquare, X, ChevronDown,
+    Edit, Trash2, Eye, MessageSquare, X, ChevronDown,
     ArrowUpDown, RefreshCw
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -149,10 +149,7 @@ const leadStatuses: Lead['lead_status'][] = [
     'New', 'Contacted', 'Qualified', 'Not Interested', 'Converted', 'Junk'
 ];
 
-const budgetRanges = ['500-1000', '1000-2000', '2000+'];
 
-const rankings = ['Hot', 'Warm', 'Cold'];
-const industries = ['Technology', 'Healthcare', 'Finance', 'Retail', 'Education', 'Manufacturing'];
 
 export default function Leads() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -242,11 +239,14 @@ export default function Leads() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
-                                {Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== false) && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -635,7 +635,10 @@ export default function Leads() {
                             <Users className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No leads found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== 0 && v !== false)
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Get started by creating your first lead'}
                             </p>

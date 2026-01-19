@@ -1,9 +1,8 @@
 import { useState } from 'react';
 import {
-    Package, Plus, Filter, Download, Search, Grid, List,
-    MoreVertical, Phone, Mail, MapPin, TrendingUp,
-    Edit, Trash2, Eye, X, ChevronDown,
-    ArrowUpDown, RefreshCw, DollarSign, Calendar
+    Package, Filter, Download, Search, Grid, List,
+    MoreVertical, MapPin,
+    Edit, Trash2, Eye, X, ChevronDown, RefreshCw, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -212,11 +211,14 @@ export default function Orders() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
-                                {Object.values(filters).some(v => v !== 'all' && v !== 0) && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -531,7 +533,10 @@ export default function Orders() {
                             <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No orders found</h3>
                             <p className="text-slate-600">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all' && v !== 0)
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Orders will appear here once customers make purchases'}
                             </p>

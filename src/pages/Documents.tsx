@@ -1,9 +1,9 @@
 import { useState } from 'react';
 import {
-    FolderOpen, Plus, Filter, Search, Grid, List, MoreVertical,
+    FolderOpen, Filter, Search, Grid, List, MoreVertical,
     Upload, Download, File, FileText, FileSpreadsheet, Image,
     Video, Music, Link, Eye, Edit, Trash2, Share2, Lock,
-    Unlock, ChevronRight, ChevronDown, RefreshCw, X, Star,
+    Unlock, ChevronRight, ChevronDown, RefreshCw, X,
     Clock, User, ArrowUpDown
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -134,14 +134,13 @@ const mockDocuments: Document[] = [
 ];
 
 const folders = ['Sales Materials', 'Documentation', 'Support', 'Legal', 'Reports', 'Marketing', 'Templates'];
-const fileTypes: FileType[] = ['folder', 'document', 'spreadsheet', 'presentation', 'pdf', 'image', 'audio', 'video', 'link'];
 
 export default function Documents() {
     const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid');
     const [showUploadDialog, setShowUploadDialog] = useState(false);
     const [showFilterPanel, setShowFilterPanel] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [documents, setDocuments] = useState<Document[]>(mockDocuments);
+    const [documents] = useState<Document[]>(mockDocuments);
     const [selectedDocuments, setSelectedDocuments] = useState<string[]>([]);
     const [activeFolder, setActiveFolder] = useState<string | null>(null);
 
@@ -254,11 +253,14 @@ export default function Documents() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filter
-                                {Object.values(filters).some(v => v !== 'all') && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -732,7 +734,10 @@ export default function Documents() {
                             <FolderOpen className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No documents found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all')
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Get started by uploading your first document'}
                             </p>

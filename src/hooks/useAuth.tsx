@@ -48,13 +48,13 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
-    setUser(response.user);
+    setUser((response as any).user);
     navigate('/dashboard');
   };
 
   const register = async (data: { email: string; password: string; name: string; company?: string; phone?: string }) => {
     const response = await api.register(data);
-    setUser(response.user);
+    setUser((response as any).user);
     navigate('/dashboard');
   };
 

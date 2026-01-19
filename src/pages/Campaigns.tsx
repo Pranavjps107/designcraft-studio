@@ -2,7 +2,7 @@ import { useState } from 'react';
 import {
     Megaphone, Plus, Filter, Download, Search, Grid, List,
     MoreVertical, TrendingUp, Users, MessageSquare, X,
-    ChevronDown, ArrowUpDown, RefreshCw, Calendar, Target
+    ChevronDown, RefreshCw, Target
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -200,11 +200,14 @@ export default function Campaigns() {
                             >
                                 <Filter className="w-4 h-4" />
                                 Filters
-                                {Object.values(filters).some(v => v !== 'all') && (
-                                    <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                        !
-                                    </Badge>
-                                )}
+                                {Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                ) && (
+                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
+                                            !
+                                        </Badge>
+                                    )}
                             </Button>
 
                             <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
@@ -514,7 +517,10 @@ export default function Campaigns() {
                             <Megaphone className="w-16 h-16 text-slate-300 mx-auto mb-4" />
                             <h3 className="text-lg font-medium text-slate-900 mb-2">No campaigns found</h3>
                             <p className="text-slate-600 mb-4">
-                                {searchQuery || Object.values(filters).some(v => v !== 'all')
+                                {searchQuery || Object.values(filters).some(
+                                    v => (typeof v === "string" && v !== "all") ||
+                                        (typeof v === "number" && v !== 0)
+                                )
                                     ? 'Try adjusting your search or filters'
                                     : 'Get started by creating your first campaign'}
                             </p>

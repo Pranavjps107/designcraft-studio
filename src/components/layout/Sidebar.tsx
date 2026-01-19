@@ -64,7 +64,7 @@ export function Sidebar() {
     <aside className="w-60 bg-sidebar border-r border-sidebar-border flex flex-col h-screen fixed left-0 top-0">
       {/* Logo */}
       <div className="p-4">
-        <span className="font-bold text-lg text-foreground">IIElevenLabs</span>
+        <span className="font-bold text-lg text-foreground">DesignCraft Studio</span>
       </div>
 
       {/* Platform Selector */}
