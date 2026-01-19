@@ -32,120 +32,17 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// B2C Lead Interface (aligned with crm.leads schema)
-interface Lead {
-    id: string;
-    name: string;
-    phone: string;
-    email?: string;
+// Import B2C types and utilities
+import type { Lead, LeadSource, LeadStatus } from '@/types/crm.types';
+import { mockLeads } from '@/data/mockData';
+import { formatDate, getStatusColor } from '@/utils/crm.utils';
 
-    // Source Tracking
-    lead_source: string;
-    utm_source?: string;
-    utm_medium?: string;
-    utm_campaign?: string;
-    referral_code?: string;
-
-    // Lead Status
-    lead_status: 'New' | 'Contacted' | 'Qualified' | 'Not Interested' | 'Converted' | 'Junk';
-
-    // Lead Quality (AI-Driven)
-    lead_score: number;
-    buying_intent_keywords?: string[];
-
-    // Product Interest
-    interested_in_products?: string[];
-    budget_range?: string;
-
-    // Conversion Tracking
-    converted: boolean;
-    converted_at?: string;
-    converted_customer_id?: string;
-    converted_deal_id?: string;
-
-    // Location (Simple)
-    city?: string;
-    state?: string;
-
-    // Metadata
-    notes?: string;
-    lead_owner?: string;
-    created_at: string;
-    last_contacted_at?: string;
-}
-
-
-const mockLeads: Lead[] = [
-    {
-        id: '1',
-        name: 'Anjali Verma',
-        phone: '+919988776655',
-        email: 'anjali.v@gmail.com',
-        lead_source: 'WhatsApp Bot',
-        utm_source: 'whatsapp',
-        utm_campaign: 'summer_sale_2026',
-        lead_status: 'Qualified',
-        lead_score: 85,
-        buying_intent_keywords: ['buy now', 'interested', 'price'],
-        interested_in_products: ['Premium Package', 'Gold Membership'],
-        budget_range: '2000+',
-        converted: false,
-        city: 'Bangalore',
-        state: 'Karnataka',
-        lead_owner: 'Pranav A',
-        created_at: '2026-01-15T10:30:00',
-        last_contacted_at: '2026-01-17T14:20:00'
-    },
-    {
-        id: '2',
-        name: 'Rajesh Kumar',
-        phone: '+918877665544',
-        email: 'rajesh.k@yahoo.com',
-        lead_source: 'Instagram DM',
-        utm_source: 'instagram',
-        utm_medium: 'social',
-        lead_status: 'Contacted',
-        lead_score: 72,
-        buying_intent_keywords: ['looking for', 'options'],
-        interested_in_products: ['Basic Package'],
-        budget_range: '1000-2000',
-        converted: false,
-        city: 'Mumbai',
-        state: 'Maharashtra',
-        lead_owner: 'Pranav A',
-        created_at: '2026-01-16T14:20:00',
-        last_contacted_at: '2026-01-16T15:00:00'
-    },
-    {
-        id: '3',
-        name: 'Meera Shah',
-        phone: '+917766554433',
-        email: 'meera.shah@outlook.com',
-        lead_source: 'Referral Code',
-        referral_code: 'REF2026JAN',
-        lead_status: 'Qualified',
-        lead_score: 91,
-        buying_intent_keywords: ['ready to buy', 'payment', 'delivery'],
-        interested_in_products: ['Premium Package', 'Add-ons'],
-        budget_range: '2000+',
-        converted: true,
-        converted_at: '2026-01-17T16:30:00',
-        converted_customer_id: 'cust_001',
-        converted_deal_id: 'deal_001',
-        city: 'Pune',
-        state: 'Maharashtra',
-        lead_owner: 'Pranav A',
-        created_at: '2026-01-17T09:15:00',
-        last_contacted_at: '2026-01-17T16:00:00'
-    }
-];
-
-const leadSources = [
+const leadSources: LeadSource[] = [
     'WhatsApp Bot', 'Instagram DM', 'Facebook Message', 'Google Ads',
     'Referral Code', 'Website Chat', 'Marketplace Inquiry', 'Offline Event'
 ];
 
-const leadStatuses: Lead['lead_status'][] = [
+const leadStatuses: LeadStatus[] = [
     'New', 'Contacted', 'Qualified', 'Not Interested', 'Converted', 'Junk'
 ];
 
@@ -166,7 +63,7 @@ export default function Leads() {
         minScore: 0
     });
 
-    const getStatusColor = (status: Lead['lead_status']) => {
+    const getLeadStatusColor = (status: Lead['lead_status']) => {
         const statusColors: Record<Lead['lead_status'], string> = {
             'New': 'bg-blue-100 text-blue-700',
             'Contacted': 'bg-purple-100 text-purple-700',
@@ -181,8 +78,13 @@ export default function Leads() {
     const getScoreColor = (score: number) => {
         if (score >= 80) return 'text-green-600 bg-green-50';
         if (score >= 60) return 'text-blue-600 bg-blue-50';
-        if (score >= 40) return 'text-yellow-600 bg-yellow-50';
-        return 'text-red-600 bg-red-50';
+        return 'text-yellow-600 bg-yellow-50';
+    };
+
+    const getScoreBarColor = (score: number) => {
+        if (score >= 80) return 'bg-green-500';
+        if (score >= 60) return 'bg-blue-500';
+        return 'bg-yellow-500';
     };
 
     const handleSelectAll = (checked: boolean) => {
@@ -451,32 +353,29 @@ export default function Leads() {
                                                     <ArrowUpDown className="w-3 h-3" />
                                                 </button>
                                             </th>
-                                            <th className="px-6 py-4 text-left">
-                                                <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
-                                                    Company
-                                                    <ArrowUpDown className="w-3 h-3" />
-                                                </button>
-                                            </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                                 Contact
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Lead Source
+                                                Source & UTM
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                                 Status
                                             </th>
                                             <th className="px-6 py-4 text-left">
                                                 <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
-                                                    Score
+                                                    Lead Score
                                                     <ArrowUpDown className="w-3 h-3" />
                                                 </button>
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Owner
+                                                Intent & Products
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
-                                                Created
+                                                Budget
+                                            </th>
+                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                                Owner
                                             </th>
                                             <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">
                                                 Actions
@@ -504,30 +403,99 @@ export default function Leads() {
                                                             <div className="font-medium text-slate-900">
                                                                 {lead.name}
                                                             </div>
+                                                            {lead.converted && (
+                                                                <Badge className="bg-green-100 text-green-700 mt-1">
+                                                                    ✓ Converted
+                                                                </Badge>
+                                                            )}
                                                         </div>
                                                     </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    <div className="flex items-center gap-2 text-sm text-slate-600">
+                                                        <Phone className="w-4 h-4 text-slate-400" />
+                                                        <span>{lead.phone}</span>
+                                                    </div>
+                                                    {lead.email && (
+                                                        <div className="flex items-center gap-2 text-sm text-slate-600 mt-1">
+                                                            <Mail className="w-4 h-4 text-slate-400" />
+                                                            <span className="truncate">{lead.email}</span>
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <Badge variant="outline" className="font-normal">
                                                         {lead.lead_source}
                                                     </Badge>
+                                                    {lead.utm_campaign && (
+                                                        <div className="text-xs text-slate-500 mt-1">
+                                                            Campaign: {lead.utm_campaign}
+                                                        </div>
+                                                    )}
+                                                    {lead.referral_code && (
+                                                        <div className="text-xs text-blue-600 mt-1">
+                                                            Referral: {lead.referral_code}
+                                                        </div>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <Badge className={getStatusColor(lead.lead_status)}>
+                                                    <Badge className={getLeadStatusColor(lead.lead_status)}>
                                                         {lead.lead_status}
                                                     </Badge>
                                                 </td>
                                                 <td className="px-6 py-4">
-                                                    <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg font-semibold ${getScoreColor(lead.lead_score)}`}>
-                                                        <TrendingUp className="w-4 h-4" />
-                                                        {lead.lead_score}
+                                                    <div className="space-y-2">
+                                                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg font-semibold ${getScoreColor(lead.lead_score)}`}>
+                                                            <TrendingUp className="w-4 h-4" />
+                                                            {lead.lead_score}
+                                                        </div>
+                                                        <div className="w-24 bg-gray-200 rounded-full h-2">
+                                                            <div
+                                                                className={`h-2 rounded-full ${getScoreBarColor(lead.lead_score)}`}
+                                                                style={{ width: `${lead.lead_score}%` }}
+                                                            />
+                                                        </div>
                                                     </div>
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {lead.buying_intent_keywords && lead.buying_intent_keywords.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1 mb-2">
+                                                            {lead.buying_intent_keywords.slice(0, 2).map((keyword, idx) => (
+                                                                <Badge key={idx} variant="outline" className="text-xs bg-yellow-50 text-yellow-700">
+                                                                    {keyword}
+                                                                </Badge>
+                                                            ))}
+                                                            {lead.buying_intent_keywords.length > 2 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    +{lead.buying_intent_keywords.length - 2}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                    {lead.interested_in_products && lead.interested_in_products.length > 0 && (
+                                                        <div className="flex flex-wrap gap-1">
+                                                            {lead.interested_in_products.slice(0, 2).map((product, idx) => (
+                                                                <Badge key={idx} variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                                                    {product}
+                                                                </Badge>
+                                                            ))}
+                                                            {lead.interested_in_products.length > 2 && (
+                                                                <Badge variant="outline" className="text-xs">
+                                                                    +{lead.interested_in_products.length - 2}
+                                                                </Badge>
+                                                            )}
+                                                        </div>
+                                                    )}
+                                                </td>
+                                                <td className="px-6 py-4">
+                                                    {lead.budget_range && (
+                                                        <Badge variant="outline" className="bg-green-50 text-green-700">
+                                                            ₹{lead.budget_range}
+                                                        </Badge>
+                                                    )}
                                                 </td>
                                                 <td className="px-6 py-4 text-sm text-slate-600">
                                                     {lead.lead_owner}
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {new Date(lead.created_at).toLocaleDateString()}
                                                 </td>
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
@@ -544,9 +512,9 @@ export default function Leads() {
                                                                 </Button>
                                                             </DropdownMenuTrigger>
                                                             <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem>Convert to Contact</DropdownMenuItem>
-                                                                <DropdownMenuItem>Send Email</DropdownMenuItem>
-                                                                <DropdownMenuItem>Create Task</DropdownMenuItem>
+                                                                <DropdownMenuItem>Convert to Customer</DropdownMenuItem>
+                                                                <DropdownMenuItem>Create Deal</DropdownMenuItem>
+                                                                <DropdownMenuItem>Send Message</DropdownMenuItem>
                                                                 <DropdownMenuItem className="text-red-600">Delete</DropdownMenuItem>
                                                             </DropdownMenuContent>
                                                         </DropdownMenu>
@@ -690,15 +658,16 @@ function CreateLeadDialog({
 
         const newLead: Lead = {
             id: String(Date.now()),
+            tenant_id: 'tenant-001', // Mock tenant ID
             name: formData.name,
             phone: formData.phone,
             email: formData.email,
-            lead_source: formData.lead_source,
-            lead_status: formData.lead_status as Lead['lead_status'],
+            lead_source: formData.lead_source as any,
+            lead_status: formData.lead_status as LeadStatus,
             lead_score: Math.floor(Math.random() * 40) + 60,
             lead_owner: formData.lead_owner,
             created_at: new Date().toISOString(),
-            // optional fields left empty
+            updated_at: new Date().toISOString(),
             converted: false
         };
 

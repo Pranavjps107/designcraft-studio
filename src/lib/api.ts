@@ -99,6 +99,12 @@ export interface AnalyticsOverview {
   outbound_messages: number;
   average_response_time_seconds: number;
   conversation_growth_percent: number;
+  // B2C CRM Metrics
+  total_customers?: number;
+  active_customers?: number;
+  churned_customers?: number;
+  total_revenue?: number; // in paise
+  total_orders?: number;
 }
 
 export interface ConversationTrend {
@@ -406,22 +412,22 @@ class APIClient {
   // ==================== CONTACTS APIs ====================
 
   async getContacts(filters: {
-  search?: string;
-  page?: number;
-  limit?: number;
-} = {}): Promise<{
-  contacts: Contact[];
-  total: number;
-  page: number;
-  per_page: number;
-}> {
-  const params = new URLSearchParams();
-  if (filters.search) params.set('search', filters.search);
-  if (filters.page) params.set('page', filters.page.toString());
-  if (filters.limit) params.set('per_page', filters.limit.toString());
+    search?: string;
+    page?: number;
+    limit?: number;
+  } = {}): Promise<{
+    contacts: Contact[];
+    total: number;
+    page: number;
+    per_page: number;
+  }> {
+    const params = new URLSearchParams();
+    if (filters.search) params.set('search', filters.search);
+    if (filters.page) params.set('page', filters.page.toString());
+    if (filters.limit) params.set('per_page', filters.limit.toString());
 
-  return this.request(`${API_BASE_URL}/v1/contacts?${params}`);
-}
+    return this.request(`${API_BASE_URL}/v1/contacts?${params}`);
+  }
 
   async createContact(data: {
     name: string;
@@ -512,51 +518,51 @@ class APIClient {
   }
 
   async downloadDocument(documentId: string) {
-  const res = await fetch(
-    `${API_BASE_URL}/v1/kb/documents/${documentId}/download`,
-    {
-      headers: {
-        Authorization: `Bearer ${this.token}`,
-      },
+    const res = await fetch(
+      `${API_BASE_URL}/v1/kb/documents/${documentId}/download`,
+      {
+        headers: {
+          Authorization: `Bearer ${this.token}`,
+        },
+      }
+    );
+
+    const contentType = res.headers.get('content-type') || '';
+
+    // Case 1: JSON response with presigned URL
+    if (contentType.includes('application/json')) {
+      const data = await res.json();
+
+      if (data.download_url) {
+        window.open(data.download_url, '_blank');
+        return;
+      }
+
+      throw new Error('Invalid download response');
     }
-  );
 
-  const contentType = res.headers.get('content-type') || '';
+    // Case 2: Binary stream
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
 
-  // Case 1: JSON response with presigned URL
-  if (contentType.includes('application/json')) {
-    const data = await res.json();
+    // Try to extract filename from headers
+    const disposition = res.headers.get('content-disposition');
+    let filename = 'download';
 
-    if (data.download_url) {
-      window.open(data.download_url, '_blank');
-      return;
+    if (disposition) {
+      const match = disposition.match(/filename="?([^"]+)"?/);
+      if (match) filename = match[1];
     }
 
-    throw new Error('Invalid download response');
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+
+    URL.revokeObjectURL(url);
   }
-
-  // Case 2: Binary stream
-  const blob = await res.blob();
-  const url = URL.createObjectURL(blob);
-
-  // Try to extract filename from headers
-  const disposition = res.headers.get('content-disposition');
-  let filename = 'download';
-
-  if (disposition) {
-    const match = disposition.match(/filename="?([^"]+)"?/);
-    if (match) filename = match[1];
-  }
-
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = filename;
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-
-  URL.revokeObjectURL(url);
-}
 
 
   async addTextSnippet(title: string, content: string) {
@@ -649,14 +655,16 @@ class APIClient {
     });
   }
 
-  async getActiveSessions(): Promise<{ sessions: Array<{
-    id: string;
-    device: string;
-    ip_address: string;
-    location: string;
-    last_active: string;
-    is_current: boolean;
-  }> }> {
+  async getActiveSessions(): Promise<{
+    sessions: Array<{
+      id: string;
+      device: string;
+      ip_address: string;
+      location: string;
+      last_active: string;
+      is_current: boolean;
+    }>
+  }> {
     return this.request(`${AUTH_BASE_URL}/v1/security/sessions`);
   }
 
@@ -727,15 +735,17 @@ class APIClient {
   }
 
   // API Keys
-  async getApiKeys(): Promise<{ api_keys: Array<{
-    id: string;
-    name: string;
-    key_preview: string;
-    scopes: string[];
-    created_at: string;
-    last_used_at: string;
-    revoked: boolean;
-  }> }> {
+  async getApiKeys(): Promise<{
+    api_keys: Array<{
+      id: string;
+      name: string;
+      key_preview: string;
+      scopes: string[];
+      created_at: string;
+      last_used_at: string;
+      revoked: boolean;
+    }>
+  }> {
     return this.request(`${AUTH_BASE_URL}/v1/api-keys`);
   }
 

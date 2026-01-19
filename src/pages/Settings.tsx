@@ -33,8 +33,9 @@ const mockNotifications: NotificationPreferences = {
 };
 
 const mockTeamMembers: TeamMember[] = [
-  { id: "1", email: "john@acme.com", name: "John Doe", role: "admin", created_at: "2025-01-01T00:00:00Z", last_active: "2 min ago" },
-  { id: "2", email: "jane@acme.com", name: "Jane Smith", role: "user", created_at: "2025-01-05T00:00:00Z", last_active: "1 hour ago" },
+  { id: "1", email: "john@acme.com", name: "John Doe", role: "owner", created_at: "2025-01-01T00:00:00Z", last_active: "2 min ago" },
+  { id: "2", email: "jane@acme.com", name: "Jane Smith", role: "admin", created_at: "2025-01-05T00:00:00Z", last_active: "1 hour ago" },
+  { id: "3", email: "bob@acme.com", name: "Bob Johnson", role: "user", created_at: "2025-01-12T00:00:00Z", last_active: "1 day ago" },
 ];
 
 export default function Settings() {
@@ -372,8 +373,8 @@ export default function Settings() {
                         </Badge>
                         <span className="text-sm text-muted-foreground">{member.last_active}</span>
                         {member.id !== profile.id && (
-                          <Button 
-                            variant="ghost" 
+                          <Button
+                            variant="ghost"
                             size="icon"
                             className="text-destructive"
                             onClick={() => handleRemoveTeamMember(member.id)}

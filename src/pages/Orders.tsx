@@ -1,8 +1,8 @@
 import { useState } from 'react';
 import {
     Package, Filter, Download, Search, Grid, List,
-    MoreVertical, MapPin,
-    Edit, Trash2, Eye, X, ChevronDown, RefreshCw, DollarSign
+    MoreVertical, MapPin, Truck, AlertCircle,
+    Edit, Trash2, Eye, RefreshCw, DollarSign
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -23,90 +23,14 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// B2C Order Interface (aligned with crm.orders schema)
-interface Order {
-    id: string;
-    order_number: string;
-    customer_id: string;
-    customer_name: string;
-    deal_id?: string;
-    product_names: string[];
-    total_amount: number;
-    payment_status: 'Pending' | 'Paid' | 'Failed' | 'Refunded';
-    order_status: 'Processing' | 'Shipped' | 'Delivered' | 'Cancelled';
-    delivery_address?: string;
-    delivery_city?: string;
-    delivery_state?: string;
-    delivery_pincode?: string;
-    created_at: string;
-    delivered_at?: string;
-}
+import type { Order, PaymentMethod, PaymentStatus, OrderStatus, IssueType } from '@/types/crm.types';
+import { mockOrders, mockCustomers } from '@/data/mockData';
+import { formatCurrency, formatDate, getStatusColor } from '@/utils/crm.utils';
 
-const mockOrders: Order[] = [
-    {
-        id: '1',
-        order_number: 'ORD-2026-001',
-        customer_id: 'cust_001',
-        customer_name: 'Anjali Sharma',
-        deal_id: 'deal_001',
-        product_names: ['Premium Package', 'Gold Membership'],
-        total_amount: 4500,
-        payment_status: 'Paid',
-        order_status: 'Delivered',
-        delivery_address: '123 MG Road',
-        delivery_city: 'Bangalore',
-        delivery_state: 'Karnataka',
-        delivery_pincode: '560001',
-        created_at: '2026-01-10T10:30:00',
-        delivered_at: '2026-01-15T14:20:00'
-    },
-    {
-        id: '2',
-        order_number: 'ORD-2026-002',
-        customer_id: 'cust_002',
-        customer_name: 'Rajesh Kumar',
-        product_names: ['Basic Package'],
-        total_amount: 1500,
-        payment_status: 'Paid',
-        order_status: 'Shipped',
-        delivery_address: '456 Park Street',
-        delivery_city: 'Mumbai',
-        delivery_state: 'Maharashtra',
-        delivery_pincode: '400001',
-        created_at: '2026-01-12T14:20:00'
-    },
-    {
-        id: '3',
-        order_number: 'ORD-2026-003',
-        customer_id: 'cust_003',
-        customer_name: 'Priya Patel',
-        product_names: ['Premium Package', 'Add-ons'],
-        total_amount: 5200,
-        payment_status: 'Pending',
-        order_status: 'Processing',
-        delivery_address: '789 FC Road',
-        delivery_city: 'Pune',
-        delivery_state: 'Maharashtra',
-        delivery_pincode: '411005',
-        created_at: '2026-01-17T09:15:00'
-    },
-    {
-        id: '4',
-        order_number: 'ORD-2026-004',
-        customer_id: 'cust_004',
-        customer_name: 'Amit Singh',
-        product_names: ['Standard Package'],
-        total_amount: 2800,
-        payment_status: 'Failed',
-        order_status: 'Cancelled',
-        delivery_city: 'Delhi',
-        delivery_state: 'Delhi',
-        created_at: '2026-01-16T11:00:00'
-    }
-];
-
-const paymentStatuses: Order['payment_status'][] = ['Pending', 'Paid', 'Failed', 'Refunded'];
-const orderStatuses: Order['order_status'][] = ['Processing', 'Shipped', 'Delivered', 'Cancelled'];
+const paymentMethods: PaymentMethod[] = ['UPI', 'COD', 'Card', 'Wallet', 'EMI'];
+const paymentStatuses: PaymentStatus[] = ['Pending', 'Paid', 'Failed', 'Refunded', 'Partially Refunded'];
+const orderStatuses: OrderStatus[] = ['Processing', 'Packed', 'Shipped', 'Out for Delivery', 'Delivered', 'Cancelled', 'Returned'];
+const issueTypes: IssueType[] = ['Delayed', 'Damaged', 'Wrong Product', 'Not Received', 'Quality Issue'];
 
 export default function Orders() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -118,28 +42,24 @@ export default function Orders() {
     const [filters, setFilters] = useState({
         paymentStatus: 'all',
         orderStatus: 'all',
-        minAmount: 0
+        hasIssue: false,
+        minAmount: ''
     });
 
-    const getPaymentStatusColor = (status: Order['payment_status']) => {
-        const colors: Record<Order['payment_status'], string> = {
-            'Pending': 'bg-yellow-100 text-yellow-700',
-            'Paid': 'bg-green-100 text-green-700',
-            'Failed': 'bg-red-100 text-red-700',
-            'Refunded': 'bg-orange-100 text-orange-700'
-        };
-        return colors[status] || 'bg-gray-100 text-gray-700';
-    };
+    const filteredOrders = orders.filter(order => {
+        const customer = mockCustomers.find(c => c.id === order.customer_id);
+        const matchesSearch =
+            order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            (customer && customer.customer_name.toLowerCase().includes(searchQuery.toLowerCase())) ||
+            (order.tracking_number && order.tracking_number.toLowerCase().includes(searchQuery.toLowerCase()));
 
-    const getOrderStatusColor = (status: Order['order_status']) => {
-        const colors: Record<Order['order_status'], string> = {
-            'Processing': 'bg-blue-100 text-blue-700',
-            'Shipped': 'bg-purple-100 text-purple-700',
-            'Delivered': 'bg-green-100 text-green-700',
-            'Cancelled': 'bg-red-100 text-red-700'
-        };
-        return colors[status] || 'bg-gray-100 text-gray-700';
-    };
+        const matchesPaymentStatus = filters.paymentStatus === 'all' || order.payment_status === filters.paymentStatus;
+        const matchesOrderStatus = filters.orderStatus === 'all' || order.order_status === filters.orderStatus;
+        const matchesIssue = !filters.hasIssue || order.has_issue;
+        const matchesMinAmount = !filters.minAmount || order.total_amount >= parseInt(filters.minAmount) * 100;
+
+        return matchesSearch && matchesPaymentStatus && matchesOrderStatus && matchesIssue && matchesMinAmount;
+    });
 
     const handleSelectAll = (checked: boolean) => {
         if (checked) {
@@ -149,401 +69,434 @@ export default function Orders() {
         }
     };
 
-    const handleSelectOrder = (orderId: string, checked: boolean) => {
-        if (checked) {
-            setSelectedOrders([...selectedOrders, orderId]);
-        } else {
-            setSelectedOrders(selectedOrders.filter(id => id !== orderId));
-        }
-    };
-
-    const filteredOrders = orders.filter(order => {
-        const matchesSearch =
-            order.order_number.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.customer_name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-            order.product_names.some(p => p.toLowerCase().includes(searchQuery.toLowerCase()));
-
-        const matchesPaymentStatus = filters.paymentStatus === 'all' || order.payment_status === filters.paymentStatus;
-        const matchesOrderStatus = filters.orderStatus === 'all' || order.order_status === filters.orderStatus;
-        const matchesAmount = order.total_amount >= filters.minAmount;
-
-        return matchesSearch && matchesPaymentStatus && matchesOrderStatus && matchesAmount;
-    });
-
-    const totalRevenue = filteredOrders.reduce((sum, order) => sum + order.total_amount, 0);
-    const paidOrders = filteredOrders.filter(o => o.payment_status === 'Paid').length;
-    const deliveredOrders = filteredOrders.filter(o => o.order_status === 'Delivered').length;
-
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-green-50 to-emerald-50">
+        <div className="flex-1 space-y-4 p-4 md:p-8 pt-6">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 shadow-sm">
-                <div className="px-6 py-4">
-                    <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-br from-green-500 to-emerald-600 rounded-xl shadow-lg">
-                                <Package className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Orders</h1>
-                                <p className="text-sm text-slate-600">{filteredOrders.length} total orders • ₹{totalRevenue.toLocaleString()} revenue</p>
+            <div className="flex items-center justify-between space-y-2">
+                <div>
+                    <h2 className="text-3xl font-bold tracking-tight">Orders</h2>
+                    <p className="text-muted-foreground">
+                        Track and manage customer orders with fulfillment status
+                    </p>
+                </div>
+            </div>
+
+            {/* Toolbar */}
+            <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+                <div className="flex flex-1 items-center space-x-2 md:max-w-sm">
+                    <div className="relative w-full">
+                        <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
+                        <Input
+                            placeholder="Search orders, customers, tracking..."
+                            value={searchQuery}
+                            onChange={(e) => setSearchQuery(e.target.value)}
+                            className="pl-8"
+                        />
+                    </div>
+                </div>
+
+                <div className="flex items-center space-x-2">
+                    <Button
+                        variant={showFilterPanel ? "default" : "outline"}
+                        size="sm"
+                        onClick={() => setShowFilterPanel(!showFilterPanel)}
+                        className={showFilterPanel ? "bg-black text-white" : ""}
+                    >
+                        <Filter className="mr-2 h-4 w-4" />
+                        Filter
+                    </Button>
+                    <Button variant="outline" size="sm">
+                        <Download className="mr-2 h-4 w-4" />
+                        Export
+                    </Button>
+                    <Button variant="outline" size="sm">
+                        <RefreshCw className="mr-2 h-4 w-4" />
+                        Refresh
+                    </Button>
+
+                    <div className="flex items-center border rounded-md">
+                        <Button
+                            variant={viewMode === 'list' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('list')}
+                            className={viewMode === 'list' ? 'bg-black text-white' : ''}
+                        >
+                            <List className="h-4 w-4" />
+                        </Button>
+                        <Button
+                            variant={viewMode === 'grid' ? 'default' : 'ghost'}
+                            size="sm"
+                            onClick={() => setViewMode('grid')}
+                            className={viewMode === 'grid' ? 'bg-black text-white' : ''}
+                        >
+                            <Grid className="h-4 w-4" />
+                        </Button>
+                    </div>
+                </div>
+            </div>
+
+            {/* Filter Panel */}
+            {showFilterPanel && (
+                <div className="rounded-lg border bg-card p-4">
+                    <div className="grid gap-4 md:grid-cols-5">
+                        <div className="space-y-2">
+                            <Label>Payment Status</Label>
+                            <Select
+                                value={filters.paymentStatus}
+                                onValueChange={(value) => setFilters({ ...filters, paymentStatus: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    {paymentStatuses.map(status => (
+                                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Order Status</Label>
+                            <Select
+                                value={filters.orderStatus}
+                                onValueChange={(value) => setFilters({ ...filters, orderStatus: value })}
+                            >
+                                <SelectTrigger>
+                                    <SelectValue placeholder="All" />
+                                </SelectTrigger>
+                                <SelectContent>
+                                    <SelectItem value="all">All Statuses</SelectItem>
+                                    {orderStatuses.map(status => (
+                                        <SelectItem key={status} value={status}>{status}</SelectItem>
+                                    ))}
+                                </SelectContent>
+                            </Select>
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Min Amount (₹)</Label>
+                            <Input
+                                type="number"
+                                placeholder="0"
+                                value={filters.minAmount}
+                                onChange={(e) => setFilters({ ...filters, minAmount: e.target.value })}
+                            />
+                        </div>
+
+                        <div className="space-y-2">
+                            <Label>Has Issues</Label>
+                            <div className="flex items-center space-x-2 pt-2">
+                                <Checkbox
+                                    checked={filters.hasIssue}
+                                    onCheckedChange={(checked) => setFilters({ ...filters, hasIssue: checked as boolean })}
+                                />
+                                <span className="text-sm">Show only orders with issues</span>
                             </div>
                         </div>
 
-                        <div className="flex items-center gap-3">
-                            {/* Stats */}
-                            <div className="flex items-center gap-4 px-4 py-2 bg-green-50 rounded-lg border border-green-200">
-                                <div className="text-center">
-                                    <div className="text-xs text-green-600 font-medium">Paid</div>
-                                    <div className="text-lg font-bold text-green-700">{paidOrders}</div>
-                                </div>
-                                <div className="text-center">
-                                    <div className="text-xs text-emerald-600 font-medium">Delivered</div>
-                                    <div className="text-lg font-bold text-emerald-700">{deliveredOrders}</div>
-                                </div>
-                            </div>
-
+                        <div className="flex items-end">
                             <Button
                                 variant="outline"
                                 size="sm"
-                                onClick={() => setShowFilterPanel(!showFilterPanel)}
-                                className="gap-2"
+                                onClick={() => setFilters({
+                                    paymentStatus: 'all',
+                                    orderStatus: 'all',
+                                    hasIssue: false,
+                                    minAmount: ''
+                                })}
                             >
-                                <Filter className="w-4 h-4" />
-                                Filters
-                                {Object.values(filters).some(
-                                    v => (typeof v === "string" && v !== "all") ||
-                                        (typeof v === "number" && v !== 0)
-                                ) && (
-                                        <Badge variant="destructive" className="ml-1 h-5 w-5 p-0 flex items-center justify-center rounded-full">
-                                            !
-                                        </Badge>
-                                    )}
+                                Reset Filters
                             </Button>
-
-                            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
-                                <Button
-                                    variant={viewMode === 'list' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('list')}
-                                    className="h-8 w-8 p-0"
-                                >
-                                    <List className="w-4 h-4" />
-                                </Button>
-                                <Button
-                                    variant={viewMode === 'grid' ? 'default' : 'ghost'}
-                                    size="sm"
-                                    onClick={() => setViewMode('grid')}
-                                    className="h-8 w-8 p-0"
-                                >
-                                    <Grid className="w-4 h-4" />
-                                </Button>
-                            </div>
-
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <Button variant="outline" size="sm" className="gap-2">
-                                        <Download className="w-4 h-4" />
-                                        Export
-                                        <ChevronDown className="w-4 h-4" />
-                                    </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent>
-                                    <DropdownMenuItem>Export as CSV</DropdownMenuItem>
-                                    <DropdownMenuItem>Export as Excel</DropdownMenuItem>
-                                    <DropdownMenuItem>Export as PDF</DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
                         </div>
                     </div>
-
-                    {/* Search Bar */}
-                    <div className="mt-4 flex items-center gap-3">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
-                            <Input
-                                placeholder="Search orders by number, customer, or product..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
-                            />
-                        </div>
-                        <Button variant="outline" size="sm" className="gap-2">
-                            <RefreshCw className="w-4 h-4" />
-                            Refresh
-                        </Button>
-                    </div>
-
-                    {/* Selected Actions Bar */}
-                    {selectedOrders.length > 0 && (
-                        <div className="mt-3 bg-green-50 border border-green-200 rounded-lg px-4 py-2 flex items-center justify-between">
-                            <span className="text-sm font-medium text-green-900">
-                                {selectedOrders.length} order{selectedOrders.length > 1 ? 's' : ''} selected
-                            </span>
-                            <div className="flex items-center gap-2">
-                                <Button variant="outline" size="sm" className="gap-2">
-                                    <Edit className="w-4 h-4" />
-                                    Bulk Edit
-                                </Button>
-                                <Button variant="outline" size="sm" className="gap-2 text-red-600 hover:text-red-700">
-                                    <Trash2 className="w-4 h-4" />
-                                    Delete
-                                </Button>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setSelectedOrders([])}
-                                >
-                                    <X className="w-4 h-4" />
-                                </Button>
-                            </div>
-                        </div>
-                    )}
                 </div>
-            </header>
+            )}
 
-            <div className="flex-1 flex overflow-hidden">
-                {/* Filter Panel */}
-                {showFilterPanel && (
-                    <aside className="w-80 bg-white border-r border-slate-200 overflow-y-auto">
-                        <div className="p-6">
-                            <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
-                                <Button
-                                    variant="ghost"
-                                    size="sm"
-                                    onClick={() => setFilters({
-                                        paymentStatus: 'all',
-                                        orderStatus: 'all',
-                                        minAmount: 0
-                                    })}
-                                    className="text-green-600"
-                                >
-                                    Clear All
-                                </Button>
-                            </div>
-
-                            <div className="space-y-6">
-                                {/* Payment Status */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Payment Status</Label>
-                                    <Select
-                                        value={filters.paymentStatus}
-                                        onValueChange={(value: string) => setFilters({ ...filters, paymentStatus: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Statuses</SelectItem>
-                                            {paymentStatuses.map(status => (
-                                                <SelectItem key={status} value={status}>{status}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Order Status */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">Order Status</Label>
-                                    <Select
-                                        value={filters.orderStatus}
-                                        onValueChange={(value: string) => setFilters({ ...filters, orderStatus: value })}
-                                    >
-                                        <SelectTrigger>
-                                            <SelectValue />
-                                        </SelectTrigger>
-                                        <SelectContent>
-                                            <SelectItem value="all">All Statuses</SelectItem>
-                                            {orderStatuses.map(status => (
-                                                <SelectItem key={status} value={status}>{status}</SelectItem>
-                                            ))}
-                                        </SelectContent>
-                                    </Select>
-                                </div>
-
-                                {/* Minimum Amount */}
-                                <div>
-                                    <Label className="text-sm font-medium text-slate-700 mb-2 block">
-                                        Minimum Amount: ₹{filters.minAmount}
-                                    </Label>
-                                    <input
-                                        type="range"
-                                        min="0"
-                                        max="10000"
-                                        step="500"
-                                        value={filters.minAmount}
-                                        onChange={(e) => setFilters({ ...filters, minAmount: parseInt(e.target.value) })}
-                                        className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-green-600"
-                                    />
-                                    <div className="flex justify-between text-xs text-slate-500 mt-1">
-                                        <span>₹0</span>
-                                        <span>₹5,000</span>
-                                        <span>₹10,000</span>
-                                    </div>
-                                </div>
-                            </div>
+            {/* Stats */}
+            <div className="grid gap-4 md:grid-cols-4">
+                <div className="rounded-lg border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Total Orders</p>
+                            <p className="text-2xl font-bold">{filteredOrders.length}</p>
                         </div>
-                    </aside>
-                )}
+                        <Package className="h-8 w-8 text-gray-400" />
+                    </div>
+                </div>
+                <div className="rounded-lg border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Total Value</p>
+                            <p className="text-2xl font-bold">
+                                {formatCurrency(filteredOrders.reduce((sum, o) => sum + o.total_amount, 0))}
+                            </p>
+                        </div>
+                        <DollarSign className="h-8 w-8 text-gray-400" />
+                    </div>
+                </div>
+                <div className="rounded-lg border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Delivered</p>
+                            <p className="text-2xl font-bold">
+                                {filteredOrders.filter(o => o.order_status === 'Delivered').length}
+                            </p>
+                        </div>
+                        <Truck className="h-8 w-8 text-gray-400" />
+                    </div>
+                </div>
+                <div className="rounded-lg border bg-card p-6">
+                    <div className="flex items-center justify-between">
+                        <div>
+                            <p className="text-sm font-medium text-muted-foreground">Issues</p>
+                            <p className="text-2xl font-bold">
+                                {filteredOrders.filter(o => o.has_issue).length}
+                            </p>
+                        </div>
+                        <AlertCircle className="h-8 w-8 text-gray-400" />
+                    </div>
+                </div>
+            </div>
 
-                {/* Main Content */}
-                <main className="flex-1 overflow-y-auto p-6">
-                    {viewMode === 'list' ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
-                            <div className="overflow-x-auto">
-                                <table className="w-full">
-                                    <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200">
-                                            <th className="px-6 py-4 text-left">
+            {/* List View */}
+            {viewMode === 'list' && (
+                <div className="rounded-md border">
+                    <div className="overflow-x-auto">
+                        <table className="w-full">
+                            <thead className="border-b bg-muted/50">
+                                <tr className="text-sm text-muted-foreground">
+                                    <th className="p-4 text-left">
+                                        <Checkbox
+                                            checked={selectedOrders.length === filteredOrders.length}
+                                            onCheckedChange={handleSelectAll}
+                                        />
+                                    </th>
+                                    <th className="p-4 text-left font-medium">Order #</th>
+                                    <th className="p-4 text-left font-medium">Customer</th>
+                                    <th className="p-4 text-left font-medium">Products</th>
+                                    <th className="p-4 text-left font-medium">Qty</th>
+                                    <th className="p-4 text-left font-medium">Amount</th>
+                                    <th className="p-4 text-left font-medium">Payment</th>
+                                    <th className="p-4 text-left font-medium">Order Status</th>
+                                    <th className="p-4 text-left font-medium">Tracking</th>
+                                    <th className="p-4 text-left font-medium">Ordered</th>
+                                    <th className="p-4 text-left font-medium">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filteredOrders.map((order) => {
+                                    const customer = mockCustomers.find(c => c.id === order.customer_id);
+                                    return (
+                                        <tr key={order.id} className="border-b hover:bg-muted/50">
+                                            <td className="p-4">
                                                 <Checkbox
-                                                    checked={selectedOrders.length === filteredOrders.length && filteredOrders.length > 0}
-                                                    onCheckedChange={handleSelectAll}
+                                                    checked={selectedOrders.includes(order.id)}
+                                                    onCheckedChange={(checked) => {
+                                                        if (checked) {
+                                                            setSelectedOrders([...selectedOrders, order.id]);
+                                                        } else {
+                                                            setSelectedOrders(selectedOrders.filter(id => id !== order.id));
+                                                        }
+                                                    }}
                                                 />
-                                            </th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Order #</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Customer</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Products</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Amount</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Payment</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Status</th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">Created</th>
-                                            <th className="px-6 py-4 text-right text-xs font-semibold text-slate-600 uppercase tracking-wider">Actions</th>
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="font-medium">{order.order_number}</div>
+                                                {order.has_issue && (
+                                                    <Badge variant="outline" className="bg-red-50 text-red-700 mt-1">
+                                                        <AlertCircle className="h-3 w-3 mr-1" />
+                                                        {order.issue_type}
+                                                    </Badge>
+                                                )}
+                                            </td>
+                                            <td className="p-4">
+                                                <div className="font-medium">{customer?.customer_name || 'N/A'}</div>
+                                                {order.delivery_city && (
+                                                    <div className="flex items-center gap-1 text-xs text-muted-foreground mt-1">
+                                                        <MapPin className="h-3 w-3" />
+                                                        {order.delivery_city}, {order.delivery_state}
+                                                    </div>
+                                                )}
+                                            </td>
+                                            <td className="p-4">
+                                                {order.product_names && order.product_names.length > 0 ? (
+                                                    <div className="flex flex-wrap gap-1">
+                                                        {order.product_names.slice(0, 2).map((product, idx) => (
+                                                            <Badge key={idx} variant="outline" className="text-xs">
+                                                                {product}
+                                                            </Badge>
+                                                        ))}
+                                                        {order.product_names.length > 2 && (
+                                                            <Badge variant="outline" className="text-xs">
+                                                                +{order.product_names.length - 2}
+                                                            </Badge>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    'N/A'
+                                                )}
+                                            </td>
+                                            <td className="p-4">{order.quantity}</td>
+                                            <td className="p-4">
+                                                <div className="font-medium">{formatCurrency(order.total_amount)}</div>
+                                                {order.payment_method && (
+                                                    <div className="text-xs text-muted-foreground">{order.payment_method}</div>
+                                                )}
+                                            </td>
+                                            <td className="p-4">
+                                                <Badge className={getStatusColor(order.payment_status, 'payment')}>
+                                                    {order.payment_status}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4">
+                                                <Badge className={getStatusColor(order.order_status, 'order')}>
+                                                    {order.order_status}
+                                                </Badge>
+                                            </td>
+                                            <td className="p-4">
+                                                {order.tracking_number ? (
+                                                    <div className="text-sm">
+                                                        <div className="font-medium">{order.tracking_number}</div>
+                                                        {order.courier_name && (
+                                                            <div className="text-xs text-muted-foreground">{order.courier_name}</div>
+                                                        )}
+                                                    </div>
+                                                ) : (
+                                                    <span className="text-muted-foreground text-sm">—</span>
+                                                )}
+                                            </td>
+                                            <td className="p-4 text-sm text-muted-foreground">
+                                                {formatDate(order.ordered_at, 'short')}
+                                            </td>
+                                            <td className="p-4">
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger asChild>
+                                                        <Button variant="ghost" size="sm">
+                                                            <MoreVertical className="h-4 w-4" />
+                                                        </Button>
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent align="end">
+                                                        <DropdownMenuItem>
+                                                            <Eye className="mr-2 h-4 w-4" />
+                                                            View Details
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <Edit className="mr-2 h-4 w-4" />
+                                                            Update Status
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem>
+                                                            <Truck className="mr-2 h-4 w-4" />
+                                                            Track Shipment
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem className="text-destructive">
+                                                            <Trash2 className="mr-2 h-4 w-4" />
+                                                            Cancel Order
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
+                                            </td>
                                         </tr>
-                                    </thead>
-                                    <tbody className="divide-y divide-slate-200">
-                                        {filteredOrders.map((order) => (
-                                            <tr
-                                                key={order.id}
-                                                className="hover:bg-green-50/50 transition-colors group"
-                                            >
-                                                <td className="px-6 py-4">
-                                                    <Checkbox
-                                                        checked={selectedOrders.includes(order.id)}
-                                                        onCheckedChange={(checked) => handleSelectOrder(order.id, checked as boolean)}
-                                                    />
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-medium text-slate-900">{order.order_number}</div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="font-medium text-slate-900">{order.customer_name}</div>
-                                                    {order.delivery_city && (
-                                                        <div className="text-sm text-slate-500 flex items-center gap-1 mt-1">
-                                                            <MapPin className="w-3 h-3" />
-                                                            {order.delivery_city}, {order.delivery_state}
-                                                        </div>
-                                                    )}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="text-sm text-slate-600">
-                                                        {order.product_names.join(', ')}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center gap-1 font-semibold text-slate-900">
-                                                        <DollarSign className="w-4 h-4" />
-                                                        ₹{order.total_amount.toLocaleString()}
-                                                    </div>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <Badge className={getPaymentStatusColor(order.payment_status)}>
-                                                        {order.payment_status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <Badge className={getOrderStatusColor(order.order_status)}>
-                                                        {order.order_status}
-                                                    </Badge>
-                                                </td>
-                                                <td className="px-6 py-4 text-sm text-slate-600">
-                                                    {new Date(order.created_at).toLocaleDateString()}
-                                                </td>
-                                                <td className="px-6 py-4">
-                                                    <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <Eye className="w-4 h-4" />
-                                                        </Button>
-                                                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                            <Edit className="w-4 h-4" />
-                                                        </Button>
-                                                        <DropdownMenu>
-                                                            <DropdownMenuTrigger asChild>
-                                                                <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                                                                    <MoreVertical className="w-4 h-4" />
-                                                                </Button>
-                                                            </DropdownMenuTrigger>
-                                                            <DropdownMenuContent align="end">
-                                                                <DropdownMenuItem>View Details</DropdownMenuItem>
-                                                                <DropdownMenuItem>Track Shipment</DropdownMenuItem>
-                                                                <DropdownMenuItem>Generate Invoice</DropdownMenuItem>
-                                                                <DropdownMenuItem className="text-red-600">Cancel Order</DropdownMenuItem>
-                                                            </DropdownMenuContent>
-                                                        </DropdownMenu>
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        ))}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {filteredOrders.map((order) => (
-                                <div
-                                    key={order.id}
-                                    className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg hover:-translate-y-1 transition-all duration-300"
-                                >
-                                    <div className="flex items-start justify-between mb-4">
-                                        <div>
-                                            <div className="font-semibold text-slate-900">{order.order_number}</div>
-                                            <div className="text-sm text-slate-600">{order.customer_name}</div>
-                                        </div>
-                                        <Badge className={getOrderStatusColor(order.order_status)}>
-                                            {order.order_status}
-                                        </Badge>
-                                    </div>
-
-                                    <div className="space-y-2 mb-4">
-                                        <div className="text-sm text-slate-600">
-                                            {order.product_names.join(', ')}
-                                        </div>
-                                        <div className="flex items-center gap-2 text-lg font-bold text-green-600">
-                                            <DollarSign className="w-5 h-5" />
-                                            ₹{order.total_amount.toLocaleString()}
-                                        </div>
-                                    </div>
-
-                                    <div className="flex items-center justify-between pt-3 border-t border-slate-100">
-                                        <Badge className={getPaymentStatusColor(order.payment_status)} variant="secondary">
-                                            {order.payment_status}
-                                        </Badge>
-                                        <div className="text-xs text-slate-500">
-                                            {new Date(order.created_at).toLocaleDateString()}
-                                        </div>
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
 
                     {filteredOrders.length === 0 && (
-                        <div className="text-center py-12">
-                            <Package className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-                            <h3 className="text-lg font-medium text-slate-900 mb-2">No orders found</h3>
-                            <p className="text-slate-600">
-                                {searchQuery || Object.values(filters).some(
-                                    v => (typeof v === "string" && v !== "all") ||
-                                        (typeof v === "number" && v !== 0)
-                                )
-                                    ? 'Try adjusting your search or filters'
-                                    : 'Orders will appear here once customers make purchases'}
+                        <div className="flex flex-col items-center justify-center py-12 text-center">
+                            <Package className="h-12 w-12 text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-semibold">No orders found</h3>
+                            <p className="text-sm text-muted-foreground">
+                                Try adjusting your search or filters
                             </p>
                         </div>
                     )}
-                </main>
-            </div>
+                </div>
+            )}
+
+            {/* Grid View */}
+            {viewMode === 'grid' && (
+                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                    {filteredOrders.map((order) => {
+                        const customer = mockCustomers.find(c => c.id === order.customer_id);
+                        return (
+                            <div key={order.id} className="rounded-lg border bg-card p-6 hover:shadow-md transition-shadow">
+                                <div className="flex items-start justify-between mb-4">
+                                    <div>
+                                        <h3 className="font-semibold">{order.order_number}</h3>
+                                        <p className="text-sm text-muted-foreground">{customer?.customer_name}</p>
+                                    </div>
+                                    <DropdownMenu>
+                                        <DropdownMenuTrigger asChild>
+                                            <Button variant="ghost" size="sm">
+                                                <MoreVertical className="h-4 w-4" />
+                                            </Button>
+                                        </DropdownMenuTrigger>
+                                        <DropdownMenuContent align="end">
+                                            <DropdownMenuItem>
+                                                <Eye className="mr-2 h-4 w-4" />
+                                                View
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem>
+                                                <Edit className="mr-2 h-4 w-4" />
+                                                Edit
+                                            </DropdownMenuItem>
+                                            <DropdownMenuItem className="text-destructive">
+                                                <Trash2 className="mr-2 h-4 w-4" />
+                                                Delete
+                                            </DropdownMenuItem>
+                                        </DropdownMenuContent>
+                                    </DropdownMenu>
+                                </div>
+
+                                <div className="space-y-3">
+                                    <div>
+                                        <p className="text-xs text-muted-foreground">Products ({order.quantity} items)</p>
+                                        <div className="flex flex-wrap gap-1 mt-1">
+                                            {order.product_names?.slice(0, 2).map((product, idx) => (
+                                                <Badge key={idx} variant="outline" className="text-xs">
+                                                    {product}
+                                                </Badge>
+                                            ))}
+                                        </div>
+                                    </div>
+
+                                    <div className="flex items-center justify-between pt-3 border-t">
+                                        <div>
+                                            <p className="text-xs text-muted-foreground">Total Amount</p>
+                                            <p className="text-lg font-bold">{formatCurrency(order.total_amount)}</p>
+                                        </div>
+                                        <Badge className={getStatusColor(order.payment_status, 'payment')}>
+                                            {order.payment_status}
+                                        </Badge>
+                                    </div>
+
+                                    <div className="flex items-center justify-between">
+                                        <Badge className={getStatusColor(order.order_status, 'order')}>
+                                            {order.order_status}
+                                        </Badge>
+                                        {order.has_issue && (
+                                            <Badge variant="outline" className="bg-red-50 text-red-700">
+                                                <AlertCircle className="h-3 w-3 mr-1" />
+                                                Issue
+                                            </Badge>
+                                        )}
+                                    </div>
+
+                                    {order.tracking_number && (
+                                        <div className="text-xs">
+                                            <p className="text-muted-foreground">Tracking: {order.tracking_number}</p>
+                                            <p className="text-muted-foreground mt-1">{order.courier_name}</p>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            )}
         </div>
     );
 }

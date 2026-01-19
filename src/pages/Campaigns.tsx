@@ -23,77 +23,15 @@ import {
 import { Label } from '@/components/ui/label';
 import { Checkbox } from '@/components/ui/checkbox';
 
-// B2C Campaign Interface (aligned with crm.campaigns schema)
-interface Campaign {
-    id: string;
-    campaign_name: string;
-    campaign_type: 'WhatsApp Broadcast' | 'SMS Campaign' | 'Email Campaign' | 'Social Media';
-    start_date: string;
-    end_date?: string;
-    status: 'Draft' | 'Scheduled' | 'Active' | 'Paused' | 'Completed';
-    total_sent: number;
-    total_delivered: number;
-    total_replied: number;
-    conversion_rate: number;
-    created_at: string;
-}
+// Import B2C types and utilities
+import type { Campaign, CampaignType, CampaignStatus } from '@/types/crm.types';
+import { mockCampaigns } from '@/data/mockData';
+import { formatDate, getStatusColor } from '@/utils/crm.utils';
 
-const mockCampaigns: Campaign[] = [
-    {
-        id: '1',
-        campaign_name: 'Summer Sale 2026',
-        campaign_type: 'WhatsApp Broadcast',
-        start_date: '2026-01-15T00:00:00',
-        end_date: '2026-01-31T23:59:59',
-        status: 'Active',
-        total_sent: 5000,
-        total_delivered: 4850,
-        total_replied: 1200,
-        conversion_rate: 24.74,
-        created_at: '2026-01-10T10:30:00'
-    },
-    {
-        id: '2',
-        campaign_name: 'New Year Special Offers',
-        campaign_type: 'SMS Campaign',
-        start_date: '2026-01-01T00:00:00',
-        end_date: '2026-01-10T23:59:59',
-        status: 'Completed',
-        total_sent: 8000,
-        total_delivered: 7920,
-        total_replied: 2100,
-        conversion_rate: 26.52,
-        created_at: '2025-12-28T14:20:00'
-    },
-    {
-        id: '3',
-        campaign_name: 'Premium Membership Launch',
-        campaign_type: 'Email Campaign',
-        start_date: '2026-01-20T00:00:00',
-        status: 'Scheduled',
-        total_sent: 0,
-        total_delivered: 0,
-        total_replied: 0,
-        conversion_rate: 0,
-        created_at: '2026-01-17T09:15:00'
-    },
-    {
-        id: '4',
-        campaign_name: 'Instagram Engagement Drive',
-        campaign_type: 'Social Media',
-        start_date: '2026-01-12T00:00:00',
-        end_date: '2026-01-25T23:59:59',
-        status: 'Active',
-        total_sent: 3500,
-        total_delivered: 3500,
-        total_replied: 850,
-        conversion_rate: 24.29,
-        created_at: '2026-01-11T11:00:00'
-    }
-];
+const campaignTypes: CampaignType[] = ['Lead Generation', 'Nurture', 'Re-engagement', 'Win-Back', 'Promotional'];
+const campaignStatuses: CampaignStatus[] = ['Draft', 'Active', 'Paused', 'Completed'];
 
-const campaignTypes: Campaign['campaign_type'][] = ['WhatsApp Broadcast', 'SMS Campaign', 'Email Campaign', 'Social Media'];
-const campaignStatuses: Campaign['status'][] = ['Draft', 'Scheduled', 'Active', 'Paused', 'Completed'];
+
 
 export default function Campaigns() {
     const [viewMode, setViewMode] = useState<'list' | 'grid'>('list');
@@ -107,10 +45,9 @@ export default function Campaigns() {
         status: 'all'
     });
 
-    const getStatusColor = (status: Campaign['status']) => {
-        const colors: Record<Campaign['status'], string> = {
+    const getStatusColor = (status: CampaignStatus) => {
+        const colors: Record<CampaignStatus, string> = {
             'Draft': 'bg-gray-100 text-gray-700',
-            'Scheduled': 'bg-blue-100 text-blue-700',
             'Active': 'bg-green-100 text-green-700',
             'Paused': 'bg-yellow-100 text-yellow-700',
             'Completed': 'bg-purple-100 text-purple-700'
@@ -118,12 +55,13 @@ export default function Campaigns() {
         return colors[status] || 'bg-gray-100 text-gray-700';
     };
 
-    const getTypeColor = (type: Campaign['campaign_type']) => {
-        const colors: Record<Campaign['campaign_type'], string> = {
-            'WhatsApp Broadcast': 'bg-emerald-100 text-emerald-700',
-            'SMS Campaign': 'bg-blue-100 text-blue-700',
-            'Email Campaign': 'bg-purple-100 text-purple-700',
-            'Social Media': 'bg-pink-100 text-pink-700'
+    const getTypeColor = (type: CampaignType) => {
+        const colors: Record<CampaignType, string> = {
+            'Lead Generation': 'bg-blue-100 text-blue-700',
+            'Nurture': 'bg-green-100 text-green-700',
+            'Re-engagement': 'bg-yellow-100 text-yellow-700',
+            'Win-Back': 'bg-orange-100 text-orange-700',
+            'Promotional': 'bg-purple-100 text-purple-700'
         };
         return colors[type] || 'bg-gray-100 text-gray-700';
     };
@@ -154,9 +92,7 @@ export default function Campaigns() {
 
     const totalSent = filteredCampaigns.reduce((sum, c) => sum + c.total_sent, 0);
     const totalDelivered = filteredCampaigns.reduce((sum, c) => sum + c.total_delivered, 0);
-    const avgConversion = filteredCampaigns.length > 0
-        ? filteredCampaigns.reduce((sum, c) => sum + c.conversion_rate, 0) / filteredCampaigns.length
-        : 0;
+    const totalConversions = filteredCampaigns.reduce((sum, c) => sum + (c.total_conversions || 0), 0);
 
     return (
         <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-pink-50 to-purple-50">
@@ -187,7 +123,7 @@ export default function Campaigns() {
                                 </div>
                                 <div className="text-center">
                                     <div className="text-xs text-emerald-600 font-medium">Avg Conv.</div>
-                                    <div className="text-lg font-bold text-emerald-700">{avgConversion.toFixed(1)}%</div>
+                                    <div className="text-lg font-bold text-emerald-700">{(totalConversions / (filteredCampaigns.length || 1)).toFixed(0)}</div>
                                 </div>
                             </div>
 
@@ -434,7 +370,7 @@ export default function Campaigns() {
                                                 <td className="px-6 py-4">
                                                     <div className="flex items-center gap-1 font-semibold text-green-600">
                                                         <TrendingUp className="w-4 h-4" />
-                                                        {campaign.conversion_rate.toFixed(2)}%
+                                                        {campaign.total_conversions || 0}
                                                     </div>
                                                 </td>
                                                 <td className="px-6 py-4">
@@ -497,8 +433,8 @@ export default function Campaigns() {
                                             <div className="text-lg font-bold text-purple-600">{campaign.total_replied.toLocaleString()}</div>
                                         </div>
                                         <div>
-                                            <div className="text-xs text-slate-500 mb-1">Conversion</div>
-                                            <div className="text-lg font-bold text-green-600">{campaign.conversion_rate.toFixed(1)}%</div>
+                                            <div className="text-xs text-slate-500 mb-1">Conversions</div>
+                                            <div className="text-lg font-bold text-green-600">{campaign.total_conversions || 0}</div>
                                         </div>
                                     </div>
 

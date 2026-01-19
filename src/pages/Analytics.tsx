@@ -6,14 +6,19 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import api, { AnalyticsOverview, ConversationTrend, DeviceBreakdown, PerformanceData } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
-// Mock data
+// Mock data with B2C metrics
 const mockOverview: AnalyticsOverview = {
   total_messages: 48200,
   total_conversations: 12847,
   inbound_messages: 28000,
   outbound_messages: 20200,
   average_response_time_seconds: 108,
-  conversation_growth_percent: 12.5
+  conversation_growth_percent: 12.5,
+  total_customers: 1247,
+  active_customers: 856,
+  churned_customers: 112,
+  total_revenue: 2458000, // in paise
+  total_orders: 3421
 };
 
 const mockTrends: ConversationTrend[] = [
@@ -63,7 +68,7 @@ export default function Analytics() {
         api.getDeviceBreakdown(),
         api.getPerformanceData()
       ]);
-      
+
       if (overviewData) setOverview(overviewData);
       if (trendsData?.conversation_trends) setTrends(trendsData.conversation_trends);
       if (devicesData?.devices) setDevices(devicesData.devices);
@@ -95,24 +100,24 @@ export default function Analytics() {
       trend: overview.conversation_growth_percent >= 0 ? "up" : "down"
     },
     {
-      title: "Message Volume",
-      value: formatNumber(overview.total_messages),
-      change: 8.9,
+      title: "Total Customers",
+      value: formatNumber(overview.total_customers || 0),
+      change: 12.3,
+      icon: Users,
+      trend: "up"
+    },
+    {
+      title: "Total Orders",
+      value: formatNumber(overview.total_orders || 0),
+      change: 8.7,
       icon: TrendingUp,
       trend: "up"
     },
     {
-      title: "Avg Response Time",
-      value: formatTime(overview.average_response_time_seconds),
-      change: -18.3,
-      icon: Clock,
-      trend: "down"
-    },
-    {
-      title: "Active Users",
-      value: formatNumber(3284),
+      title: "Total Revenue",
+      value: "₹" + formatNumber(Math.floor((overview.total_revenue || 0) / 100)),
       change: 15.2,
-      icon: Users,
+      icon: TrendingUp,
       trend: "up"
     },
   ];
@@ -141,6 +146,7 @@ export default function Analytics() {
         <Tabs defaultValue="overview" className="space-y-6">
           <TabsList>
             <TabsTrigger value="overview">Overview</TabsTrigger>
+            <TabsTrigger value="b2c">B2C Metrics</TabsTrigger>
             <TabsTrigger value="performance">Performance</TabsTrigger>
           </TabsList>
 
@@ -285,6 +291,78 @@ export default function Analytics() {
                         </div>
                       </div>
                     ))}
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="b2c" className="space-y-6">
+            {/* B2C Metrics */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Customer Status</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-4">
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm text-foreground">Active</span>
+                        <span className="text-sm font-medium text-green-600">{overview.active_customers || 0}</span>
+                      </div>
+                      <div className="h-2 bg-accent rounded-full overflow-hidden">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: `${((overview.active_customers || 0) / (overview.total_customers || 1)) * 100}%` }} />
+                      </div>
+                    </div>
+                    <div>
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm text-foreground">Churned</span>
+                        <span className="text-sm font-medium text-red-600">{overview.churned_customers || 0}</span>
+                      </div>
+                      <div className="h-2 bg-accent rounded-full overflow-hidden">
+                        <div className="h-full bg-red-500 rounded-full" style={{ width: `${((overview.churned_customers || 0) / (overview.total_customers || 1)) * 100}%` }} />
+                      </div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Order Metrics</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-3">
+                    <div>
+                      <p className="text-sm text-muted-foreground">Total Orders</p>
+                      <p className="text-2xl font-bold text-foreground">{formatNumber(overview.total_orders || 0)}</p>
+                    </div>
+                    <div>
+                      <p className="text-sm text-muted-foreground">Avg Order Value</p>
+                      <p className="text-xl font-bold text-foreground">
+                        ₹{overview.total_orders ? formatNumber(Math.floor((overview.total_revenue || 0) / (overview.total_orders * 100))) : 0}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Revenue Breakdown</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="text-center">
+                    <p className="text-3xl font-bold text-foreground mb-2">₹{formatNumber(Math.floor((overview.total_revenue || 0) / 100))}</p>
+                    <p className="text-sm text-muted-foreground">Total Revenue</p>
+                    <div className="mt-4 pt-4 border-t">
+                      <p className="text-sm text-muted-foreground">Growth</p>
+                      <div className="flex items-center justify-center gap-1 text-green-600 font-medium">
+                        <ArrowUp className="h-4 w-4" />
+                        15.2%
+                      </div>
+                    </div>
                   </div>
                 </CardContent>
               </Card>
