@@ -227,9 +227,9 @@ export default function Documents() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-amber-50 to-orange-50">
+        <div className="h-screen flex flex-col bg-background">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 shadow-sm">
+            <header className="bg-card border-b border-border">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -237,8 +237,8 @@ export default function Documents() {
                                 <FolderOpen className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Documents</h1>
-                                <p className="text-sm text-slate-600">
+                                <h1 className="text-xl font-semibold text-foreground">Documents</h1>
+                                <p className="text-sm text-muted-foreground">
                                     {filteredDocuments.length} items
                                     {activeFolder && ` in ${activeFolder}`}
                                 </p>
@@ -283,7 +283,7 @@ export default function Documents() {
                             <Button
                                 size="sm"
                                 onClick={() => setShowUploadDialog(true)}
-                                className="gap-2 bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-700 hover:to-orange-700 shadow-lg shadow-amber-500/30"
+                                className="gap-2"
                             >
                                 <Upload className="w-4 h-4" />
                                 Upload
@@ -377,8 +377,8 @@ export default function Documents() {
                                     <button
                                         onClick={() => setActiveFolder(null)}
                                         className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-colors ${!activeFolder
-                                                ? 'bg-amber-50 text-amber-700 font-medium'
-                                                : 'text-slate-700 hover:bg-slate-50'
+                                            ? 'bg-amber-50 text-amber-700 font-medium'
+                                            : 'text-slate-700 hover:bg-slate-50'
                                             }`}
                                     >
                                         <FolderOpen className="w-4 h-4" />
@@ -389,8 +389,8 @@ export default function Documents() {
                                             key={folder}
                                             onClick={() => setActiveFolder(folder)}
                                             className={`flex items-center gap-2 w-full px-3 py-2 text-sm rounded-lg transition-colors ${activeFolder === folder
-                                                    ? 'bg-amber-50 text-amber-700 font-medium'
-                                                    : 'text-slate-700 hover:bg-slate-50'
+                                                ? 'bg-amber-50 text-amber-700 font-medium'
+                                                : 'text-slate-700 hover:bg-slate-50'
                                                 }`}
                                         >
                                             <FolderOpen className="w-4 h-4" />

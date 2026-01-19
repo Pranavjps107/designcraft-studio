@@ -198,9 +198,9 @@ export default function Tasks() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-purple-50 to-indigo-50">
+        <div className="h-screen flex flex-col bg-background">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 shadow-sm">
+            <header className="bg-card border-b border-border">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -208,8 +208,8 @@ export default function Tasks() {
                                 <CheckSquare className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Tasks</h1>
-                                <p className="text-sm text-slate-600">{filteredTasks.length} total tasks</p>
+                                <h1 className="text-xl font-semibold text-foreground">Tasks</h1>
+                                <p className="text-sm text-muted-foreground">{filteredTasks.length} total tasks</p>
                             </div>
                         </div>
 
@@ -267,7 +267,7 @@ export default function Tasks() {
                             <Button
                                 size="sm"
                                 onClick={() => setShowCreateDialog(true)}
-                                className="gap-2 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-lg shadow-purple-500/30"
+                                className="gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Create Task

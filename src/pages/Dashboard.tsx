@@ -1,88 +1,71 @@
-import { LayoutDashboard, TrendingUp, Users, MessageSquare } from 'lucide-react';
+import { LayoutDashboard, TrendingUp, Users, MessageSquare, ArrowUpRight } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function Dashboard() {
+    const stats = [
+        { label: 'Total Conversations', value: '1,234', change: '+12.5%', icon: MessageSquare },
+        { label: 'Active Contacts', value: '567', change: '+8.2%', icon: Users },
+        { label: 'Active Leads', value: '89', change: '+15.1%', icon: TrendingUp },
+        { label: 'Open Deals', value: '23', change: '+5.7%', icon: LayoutDashboard },
+    ];
+
     return (
-        <div className="h-full bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-8 overflow-y-auto">
-            <div className="max-w-7xl mx-auto">
-                <div className="mb-8">
-                    <h1 className="text-3xl font-bold text-slate-900 mb-2">Dashboard</h1>
-                    <p className="text-slate-600">Welcome back! Here's your overview.</p>
+        <div className="h-full bg-background overflow-y-auto">
+            {/* Header */}
+            <div className="border-b border-border px-8 py-6">
+                <div className="max-w-7xl mx-auto">
+                    <p className="text-sm text-muted-foreground mb-1">Your Workspace</p>
+                    <h1 className="text-2xl font-semibold text-foreground">Good afternoon</h1>
                 </div>
+            </div>
 
-                {/* Stats Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-blue-50 rounded-lg">
-                                <MessageSquare className="w-6 h-6 text-blue-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +12.5%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">1,234</h3>
-                        <p className="text-sm text-slate-600">Total Conversations</p>
+            <div className="px-8 py-6">
+                <div className="max-w-7xl mx-auto">
+                    {/* Stats Row */}
+                    <div className="grid grid-cols-4 gap-0 border-b border-border mb-8">
+                        {stats.map((stat, index) => {
+                            const Icon = stat.icon;
+                            return (
+                                <div key={index} className="py-6 pr-8 border-r border-border last:border-r-0">
+                                    <div className="flex items-center gap-2 mb-2">
+                                        <Icon className="h-4 w-4 text-muted-foreground" />
+                                        <p className="text-xs text-muted-foreground font-medium">{stat.label}</p>
+                                    </div>
+                                    <div className="flex items-baseline gap-3">
+                                        <p className="text-2xl font-semibold text-foreground">{stat.value}</p>
+                                        <span className="text-xs text-success font-medium">{stat.change}</span>
+                                    </div>
+                                </div>
+                            );
+                        })}
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-green-50 rounded-lg">
-                                <Users className="w-6 h-6 text-green-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +8.2%
-                            </span>
+                    {/* Welcome Card */}
+                    <div className="card-clean p-8 mb-6">
+                        <h2 className="text-xl font-semibold text-foreground mb-2">
+                            Welcome to DesignCraft Studio
+                        </h2>
+                        <p className="text-muted-foreground mb-6 max-w-2xl">
+                            Manage your leads, contacts, deals, and tasks all in one place. Experience the power of AI-driven CRM with beautiful analytics and seamless integrations.
+                        </p>
+                        <div className="flex gap-3">
+                            <Button className="gap-2">
+                                View Leads
+                                <ArrowUpRight className="h-4 w-4" />
+                            </Button>
+                            <Button variant="outline" className="gap-2">
+                                View Deals
+                                <ArrowUpRight className="h-4 w-4" />
+                            </Button>
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">567</h3>
-                        <p className="text-sm text-slate-600">Active Contacts</p>
                     </div>
 
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-purple-50 rounded-lg">
-                                <TrendingUp className="w-6 h-6 text-purple-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +15.1%
-                            </span>
+                    {/* Activity Chart Placeholder */}
+                    <div className="card-clean p-6">
+                        <h3 className="text-sm font-semibold text-foreground mb-4">Activity Overview</h3>
+                        <div className="h-64 flex items-center justify-center text-muted-foreground text-sm">
+                            Chart visualization goes here
                         </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">89</h3>
-                        <p className="text-sm text-slate-600">Active Leads</p>
-                    </div>
-
-                    <div className="bg-white rounded-xl shadow-sm border border-slate-200 p-6 hover:shadow-lg transition-shadow">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="p-2 bg-amber-50 rounded-lg">
-                                <LayoutDashboard className="w-6 h-6 text-amber-600" />
-                            </div>
-                            <span className="text-xs font-medium text-green-600 bg-green-50 px-2 py-1 rounded-full">
-                                +5.7%
-                            </span>
-                        </div>
-                        <h3 className="text-2xl font-bold text-slate-900 mb-1">23</h3>
-                        <p className="text-sm text-slate-600">Open Deals</p>
-                    </div>
-                </div>
-
-                {/* Welcome Message */}
-                <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-xl shadow-lg p-8 text-white">
-                    <h2 className="text-2xl font-bold mb-2">Welcome to ChatBot AI CRM</h2>
-                    <p className="text-blue-100 mb-4">
-                        Manage your leads, contacts, deals, and tasks all in one place.
-                    </p>
-                    <div className="flex gap-4">
-                        <a
-                            href="/leads"
-                            className="px-4 py-2 bg-white text-blue-600 rounded-lg font-medium hover:bg-blue-50 transition-colors"
-                        >
-                            View Leads
-                        </a>
-                        <a
-                            href="/deals"
-                            className="px-4 py-2 bg-blue-500 text-white rounded-lg font-medium hover:bg-blue-400 transition-colors"
-                        >
-                            View Deals
-                        </a>
                     </div>
                 </div>
             </div>

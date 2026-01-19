@@ -14,6 +14,7 @@ import Tasks from './pages/Tasks';
 import Documents from './pages/Documents';
 import Orders from './pages/Orders';
 import Campaigns from './pages/Campaigns';
+import Contacts from './pages/Contacts';
 import Login from './pages/Login';
 import SignUp from './pages/SignUp';
 
@@ -39,6 +40,7 @@ function App() {
                         {/* CRM Module Routes */}
                         <Route path="leads" element={<Leads />} />
                         <Route path="customers" element={<Customers />} />
+                        <Route path="contacts" element={<Contacts />} />
                         <Route path="deals" element={<Deals />} />
                         <Route path="orders" element={<Orders />} />
                         <Route path="tasks" element={<Tasks />} />

@@ -217,19 +217,14 @@ export default function Contacts() {
     };
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-cyan-50 to-blue-50">
+        <div className="h-screen flex flex-col bg-background">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 shadow-sm">
+            <header className="bg-card border-b border-border">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-3">
-                            <div className="p-2 bg-gradient-to-br from-cyan-500 to-blue-600 rounded-xl shadow-lg">
-                                <Users className="w-6 h-6 text-white" />
-                            </div>
-                            <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Contacts</h1>
-                                <p className="text-sm text-slate-600">{filteredContacts.length} total contacts</p>
-                            </div>
+                        <div>
+                            <h1 className="text-xl font-semibold text-foreground">Contacts</h1>
+                            <p className="text-sm text-muted-foreground">{filteredContacts.length} total contacts</p>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -248,7 +243,7 @@ export default function Contacts() {
                                 )}
                             </Button>
 
-                            <div className="flex items-center gap-1 bg-slate-100 rounded-lg p-1">
+                            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
                                 <Button
                                     variant={viewMode === 'list' ? 'default' : 'ghost'}
                                     size="sm"
@@ -285,7 +280,7 @@ export default function Contacts() {
                             <Button
                                 size="sm"
                                 onClick={() => setShowCreateDialog(true)}
-                                className="gap-2 bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 shadow-lg shadow-cyan-500/30"
+                                className="gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Create Contact
@@ -296,12 +291,12 @@ export default function Contacts() {
                     {/* Search Bar */}
                     <div className="mt-4 flex items-center gap-3">
                         <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-slate-400" />
+                            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
                             <Input
                                 placeholder="Search contacts by name, email, account..."
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="pl-10 bg-slate-50 border-slate-200 focus:bg-white transition-colors"
+                                className="pl-10"
                             />
                         </div>
                         <Button variant="outline" size="sm" className="gap-2">
@@ -312,8 +307,8 @@ export default function Contacts() {
 
                     {/* Selected Actions Bar */}
                     {selectedContacts.length > 0 && (
-                        <div className="mt-3 bg-cyan-50 border border-cyan-200 rounded-lg px-4 py-2 flex items-center justify-between">
-                            <span className="text-sm font-medium text-cyan-900">
+                        <div className="mt-3 bg-accent border border-border rounded-lg px-4 py-2 flex items-center justify-between">
+                            <span className="text-sm font-medium text-foreground">
                                 {selectedContacts.length} contact{selectedContacts.length > 1 ? 's' : ''} selected
                             </span>
                             <div className="flex items-center gap-2">
@@ -329,7 +324,7 @@ export default function Contacts() {
                                     <Edit className="w-4 h-4" />
                                     Bulk Edit
                                 </Button>
-                                <Button variant="outline" size="sm" className="gap-2 text-red-600 hover:text-red-700">
+                                <Button variant="outline" size="sm" className="gap-2 text-destructive hover:text-destructive">
                                     <Trash2 className="w-4 h-4" />
                                     Delete
                                 </Button>
@@ -349,10 +344,10 @@ export default function Contacts() {
             <div className="flex-1 flex overflow-hidden">
                 {/* Filter Panel */}
                 {showFilterPanel && (
-                    <aside className="w-80 bg-white border-r border-slate-200 overflow-y-auto">
+                    <aside className="w-80 bg-card border-r border-border overflow-y-auto">
                         <div className="p-6">
                             <div className="flex items-center justify-between mb-6">
-                                <h2 className="text-lg font-semibold text-slate-900">Filters</h2>
+                                <h2 className="text-sm font-semibold text-foreground">Filters</h2>
                                 <Button
                                     variant="ghost"
                                     size="sm"
@@ -363,7 +358,6 @@ export default function Contacts() {
                                         touched: false,
                                         untouched: false
                                     })}
-                                    className="text-cyan-600"
                                 >
                                     Clear All
                                 </Button>
@@ -470,11 +464,11 @@ export default function Contacts() {
                 {/* Main Content */}
                 <main className="flex-1 overflow-y-auto p-6">
                     {viewMode === 'list' ? (
-                        <div className="bg-white rounded-xl shadow-sm border border-slate-200 overflow-hidden">
+                        <div className="card-clean overflow-hidden">
                             <div className="overflow-x-auto">
                                 <table className="w-full">
                                     <thead>
-                                        <tr className="bg-slate-50 border-b border-slate-200">
+                                        <tr className="bg-muted border-b border-border">
                                             <th className="px-6 py-4 text-left">
                                                 <Checkbox
                                                     checked={selectedContacts.length === filteredContacts.length && filteredContacts.length > 0}
@@ -482,12 +476,12 @@ export default function Contacts() {
                                                 />
                                             </th>
                                             <th className="px-6 py-4 text-left">
-                                                <button className="flex items-center gap-2 text-xs font-semibold text-slate-600 uppercase tracking-wider hover:text-slate-900 transition-colors">
+                                                <button className="flex items-center gap-2 text-xs font-medium text-muted-foreground uppercase tracking-wider hover:text-foreground transition-colors">
                                                     Contact Name
                                                     <ArrowUpDown className="w-3 h-3" />
                                                 </button>
                                             </th>
-                                            <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">
+                                            <th className="px-6 py-4 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
                                                 Account
                                             </th>
                                             <th className="px-6 py-4 text-left text-xs font-semibold text-slate-600 uppercase tracking-wider">

@@ -218,9 +218,9 @@ export default function Leads() {
     });
 
     return (
-        <div className="h-screen flex flex-col bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+        <div className="h-screen flex flex-col bg-background">
             {/* Header */}
-            <header className="bg-white border-b border-slate-200 shadow-sm">
+            <header className="bg-card border-b border-border">
                 <div className="px-6 py-4">
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
@@ -228,8 +228,8 @@ export default function Leads() {
                                 <Users className="w-6 h-6 text-white" />
                             </div>
                             <div>
-                                <h1 className="text-2xl font-bold text-slate-900">Leads</h1>
-                                <p className="text-sm text-slate-600">{filteredLeads.length} total leads</p>
+                                <h1 className="text-xl font-semibold text-foreground">Leads</h1>
+                                <p className="text-sm text-muted-foreground">{filteredLeads.length} total leads</p>
                             </div>
                         </div>
 
@@ -286,7 +286,7 @@ export default function Leads() {
                             <Button
                                 size="sm"
                                 onClick={() => setShowCreateDialog(true)}
-                                className="gap-2 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-lg shadow-blue-500/30"
+                                className="gap-2"
                             >
                                 <Plus className="w-4 h-4" />
                                 Create Lead
