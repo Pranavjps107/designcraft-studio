@@ -1,10 +1,8 @@
 import { useState, useEffect } from "react";
-import { MessageSquare, Users, Clock, TrendingUp, ArrowUp, ArrowDown, Bot, UserCheck, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { MessageSquare, Users, Clock, TrendingUp, ArrowUp, ArrowDown, Bot, UserCheck } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { toast } from "sonner";
 import api, { AnalyticsOverview, ConversationTrend, DeviceBreakdown, PerformanceData } from "@/lib/api";
 import { cn } from "@/lib/utils";
 
@@ -50,7 +48,7 @@ export default function Analytics() {
   const [trends, setTrends] = useState<ConversationTrend[]>(mockTrends);
   const [devices, setDevices] = useState<DeviceBreakdown[]>(mockDevices);
   const [performance, setPerformance] = useState<PerformanceData>(mockPerformance);
-  const [isLoading, setIsLoading] = useState(false);
+  const [, setIsLoading] = useState(false);
 
   useEffect(() => {
     loadAnalytics();
