@@ -7,7 +7,7 @@ import {
     BookOpen,
     Plug,
     Settings as SettingsIcon,
-    
+
     Target,
     DollarSign,
     CheckSquare,
@@ -199,7 +199,7 @@ export function Layout() {
                             JD
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">John Doe</p>
+                            <p className="text-sm font-medium text-foreground truncate">Pranav</p>
                         </div>
                     </div>
                 </div>

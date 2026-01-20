@@ -100,7 +100,7 @@ export default function SignUp() {
           </Label>
           <Input
             id="fullname"
-            placeholder="John Doe"
+            placeholder="Pranav"
             className="h-10"
             value={formData.name}
             onChange={(e) => setFormData({ ...formData, name: e.target.value })}

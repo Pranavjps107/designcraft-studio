@@ -18,7 +18,7 @@ import api, { UserProfile, NotificationPreferences, TeamMember } from "@/lib/api
 const mockProfile: UserProfile = {
   id: "1",
   email: "john@acme.com",
-  name: "John Doe",
+  name: "Pranav",
   avatar_url: "",
   role: "admin",
   tenant: { id: "1", name: "Acme Inc." },
@@ -33,7 +33,7 @@ const mockNotifications: NotificationPreferences = {
 };
 
 const mockTeamMembers: TeamMember[] = [
-  { id: "1", email: "john@acme.com", name: "John Doe", role: "owner", created_at: "2025-01-01T00:00:00Z", last_active: "2 min ago" },
+  { id: "1", email: "john@acme.com", name: "Pranav", role: "owner", created_at: "2025-01-01T00:00:00Z", last_active: "2 min ago" },
   { id: "2", email: "jane@acme.com", name: "Jane Smith", role: "admin", created_at: "2025-01-05T00:00:00Z", last_active: "1 hour ago" },
   { id: "3", email: "bob@acme.com", name: "Bob Johnson", role: "user", created_at: "2025-01-12T00:00:00Z", last_active: "1 day ago" },
 ];
