@@ -54,7 +54,7 @@ export function Layout() {
             <aside className="w-60 bg-sidebar border-r border-sidebar-border flex flex-col">
                 {/* Logo */}
                 <div className="p-4">
-                    <h1 className="font-bold text-lg text-foreground">DesignCraft Studio</h1>
+                    <h1 className="font-bold text-lg text-foreground">Agentix</h1>
                 </div>
 
                 {/* Navigation */}
@@ -196,7 +196,7 @@ export function Layout() {
                 <div className="p-3 border-t border-sidebar-border">
                     <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-active cursor-pointer transition-colors">
                         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                            JD
+                            P
                         </div>
                         <div className="flex-1 min-w-0">
                             <p className="text-sm font-medium text-foreground truncate">Pranav</p>
