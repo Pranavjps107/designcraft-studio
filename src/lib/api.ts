@@ -1,12 +1,12 @@
 // API Client Configuration
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
-const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:8000';
+const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || 'https://wa-auth-8pf4.onrender.com';
 const AI_BASE_URL = import.meta.env.VITE_AI_BASE_URL || 'http://localhost:8002';
 
 export interface User {
   id: string;
   email: string;
-  name: string;
+  full_name: string;
   role: string;
   tenant_id: string;
   avatar_url?: string;
@@ -160,11 +160,17 @@ export interface Integration {
 export interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  full_name: string;
   avatar_url?: string;
   role: string;
-  tenant: { id: string; name: string };
+  status: string;
   created_at: string;
+  notification_settings: {
+    email_enabled: boolean;
+    new_conversations: boolean;
+    unread_messages: boolean;
+    weekly_reports: boolean;
+  };
 }
 
 export interface NotificationPreferences {
@@ -225,6 +231,27 @@ class APIClient {
       credentials: 'omit', // Fix CORS issues with preview domains
     });
 
+    if (response.status === 401 && this.token) {
+      // Token might be expired, try to refresh
+      try {
+        await this.refreshToken();
+        // Retry the request with new token
+        (headers as Record<string, string>)['Authorization'] = `Bearer ${this.token}`;
+        const retryResponse = await fetch(url, {
+          ...options,
+          headers,
+          credentials: 'omit',
+        });
+        if (retryResponse.ok) {
+          return retryResponse.json();
+        }
+      } catch (refreshError) {
+        // Refresh failed, clear tokens
+        this.clearToken();
+        throw new Error('Authentication expired');
+      }
+    }
+
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: response.statusText }));
       throw new Error(error.message || `HTTP ${response.status}: ${response.statusText}`);
@@ -281,22 +308,55 @@ class APIClient {
   async register(data: {
     email: string;
     password: string;
-    name: string;
-    company?: string;
-    phone?: string;
-  }): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse & { token?: string }>(`${AUTH_BASE_URL}/v1/auth/register`, {
+    full_name: string;
+    tenant_name: string;
+  }): Promise<{ user_id: string }> {
+    const response = await this.request<{ user_id: string }>(`${AUTH_BASE_URL}/v1/auth/register`, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        full_name: data.full_name,
+        tenant_name: data.tenant_name,
+      }),
     });
 
-    if (response.access_token) {
-      this.setToken(response.access_token);
-    } else if (response.token) {
-      this.setToken(response.token);
+    return response;
+  }
+
+  async verifyToken(token: string): Promise<{
+    user_id: string;
+    tenant_id: string;
+    email: string;
+    role: string;
+    scopes: string[];
+  }> {
+    return this.request(`${AUTH_BASE_URL}/v1/auth/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async refreshToken(): Promise<AuthResponse> {
+    const refreshToken = localStorage.getItem('refresh_token');
+    if (!refreshToken) {
+      throw new Error('No refresh token available');
     }
 
-    return response;
+    const response = await fetch(`${AUTH_BASE_URL}/v1/auth/refresh`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ refresh_token: refreshToken }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Token refresh failed');
+    }
+
+    const data = await response.json();
+    this.setToken(data.access_token);
+    localStorage.setItem('refresh_token', data.refresh_token);
+    return data;
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {
@@ -622,10 +682,9 @@ class APIClient {
     return this.request(`${AUTH_BASE_URL}/v1/users/me`);
   }
 
-  async updateUserProfile(data: Partial<UserProfile>): Promise<UserProfile> {
-    return this.request(`${AUTH_BASE_URL}/v1/users/me`, {
+  async updateUserProfile(data: Partial<UserProfile>): Promise<{ success: boolean; message: string }> {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me/profile?full_name=${data.full_name}`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
     });
   }
 
@@ -649,27 +708,13 @@ class APIClient {
 
   // Security
   async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
-    return this.request(`${AUTH_BASE_URL}/v1/auth/change-password`, {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me/change-password?current_password=${encodeURIComponent(currentPassword)}&new_password=${encodeURIComponent(newPassword)}`, {
       method: 'POST',
-      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
   }
 
-  async getActiveSessions(): Promise<{
-    sessions: Array<{
-      id: string;
-      device: string;
-      ip_address: string;
-      location: string;
-      last_active: string;
-      is_current: boolean;
-    }>
-  }> {
-    return this.request(`${AUTH_BASE_URL}/v1/security/sessions`);
-  }
-
-  async revokeSession(sessionId: string): Promise<{ success: boolean }> {
-    return this.request(`${AUTH_BASE_URL}/v1/security/sessions/${sessionId}`, {
+  async deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me?password=${encodeURIComponent(password)}`, {
       method: 'DELETE',
     });
   }

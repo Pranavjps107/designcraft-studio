@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { toast } from 'sonner';
 import api, { User } from '@/lib/api';
 
 interface AuthContextType {
@@ -7,7 +8,7 @@ interface AuthContextType {
   isAuthenticated: boolean;
   isLoading: boolean;
   login: (email: string, password: string) => Promise<void>;
-  register: (data: { email: string; password: string; name: string; company?: string; phone?: string }) => Promise<void>;
+  register: (data: { email: string; password: string; full_name: string; tenant_name: string }) => Promise<void>;
   logout: () => void;
 }
 
@@ -22,20 +23,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     // Check if user is already logged in
     const token = api.getToken();
     if (token) {
-      // Try to fetch user profile
-      api.getUserProfile()
+      // Verify token and fetch user profile
+      api.verifyToken(token)
+        .then((verifiedData) => {
+          // Token is valid, now get full profile
+          return api.getUserProfile();
+        })
         .then((profile) => {
           setUser({
             id: profile.id,
             email: profile.email,
-            name: profile.name,
+            full_name: profile.full_name,
             role: profile.role,
-            tenant_id: profile.tenant.id,
+            tenant_id: 'default', // We'll need to get this from verify response or profile
             avatar_url: profile.avatar_url,
           });
         })
         .catch(() => {
-          // Token might be expired
+          // Token might be expired or invalid
           api.clearToken();
         })
         .finally(() => {
@@ -48,14 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await api.login(email, password);
-    setUser((response as any).user);
+    // After login, fetch user profile to get user data
+    const profile = await api.getUserProfile();
+    setUser({
+      id: profile.id,
+      email: profile.email,
+      full_name: profile.full_name,
+      role: profile.role,
+      tenant_id: 'default', // Need to get from verify token or profile
+      avatar_url: profile.avatar_url,
+    });
     navigate('/dashboard');
   };
 
-  const register = async (data: { email: string; password: string; name: string; company?: string; phone?: string }) => {
-    const response = await api.register(data);
-    setUser((response as any).user);
-    navigate('/dashboard');
+  const register = async (data: { email: string; password: string; full_name: string; tenant_name: string }) => {
+    await api.register(data);
+    // After registration, user needs to login
+    toast.success("Account created successfully! Please login.");
+    navigate('/login');
   };
 
   const logout = () => {

@@ -22,10 +22,10 @@ export default function SignUp() {
   const navigate = useNavigate();
 
   const [formData, setFormData] = useState({
-    name: "",
+    full_name: "",
     email: "",
     password: "",
-    company: "",
+    tenant_name: "",
     website: "",
     teamSize: "1-10 employees",
     phone: "",
@@ -48,12 +48,19 @@ export default function SignUp() {
 
   const handleContinue = async () => {
     if (currentStep === 1) {
-      if (!formData.name || !formData.email || !formData.password) {
+      if (!formData.full_name || !formData.email || !formData.password) {
         toast.error("Please fill in all required fields");
         return;
       }
       if (passwordStrength === "weak") {
         toast.error("Please use a stronger password");
+        return;
+      }
+    }
+
+    if (currentStep === 2) {
+      if (!formData.tenant_name) {
+        toast.error("Please enter a tenant name");
         return;
       }
     }
@@ -69,12 +76,11 @@ export default function SignUp() {
       await api.register({
         email: formData.email,
         password: formData.password,
-        name: formData.name,
-        company: formData.company,
-        phone: formData.phone,
+        full_name: formData.full_name,
+        tenant_name: formData.tenant_name,
       });
       toast.success("Account created successfully!");
-      navigate("/dashboard");
+      navigate("/login");
     } catch (error: any) {
       toast.error(error.message || "Failed to create account");
     } finally {
@@ -102,8 +108,8 @@ export default function SignUp() {
             id="fullname"
             placeholder="Pranav"
             className="h-10"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+            value={formData.full_name}
+            onChange={(e) => setFormData({ ...formData, full_name: e.target.value })}
           />
         </div>
 
@@ -181,15 +187,15 @@ export default function SignUp() {
 
       <div className="space-y-4">
         <div className="space-y-2">
-          <Label htmlFor="company" className="text-sm font-medium">
-            Company Name
+          <Label htmlFor="tenant_name" className="text-sm font-medium">
+            Tenant Name *
           </Label>
           <Input
-            id="company"
-            placeholder="Acme Inc."
+            id="tenant_name"
+            placeholder="My Company"
             className="h-10"
-            value={formData.company}
-            onChange={(e) => setFormData({ ...formData, company: e.target.value })}
+            value={formData.tenant_name}
+            onChange={(e) => setFormData({ ...formData, tenant_name: e.target.value })}
           />
         </div>
 

@@ -18,11 +18,17 @@ import api, { UserProfile, NotificationPreferences, TeamMember } from "@/lib/api
 const mockProfile: UserProfile = {
   id: "1",
   email: "john@acme.com",
-  name: "Pranav",
+  full_name: "Pranav",
   avatar_url: "",
   role: "admin",
-  tenant: { id: "1", name: "Acme Inc." },
-  created_at: "2025-01-01T00:00:00Z"
+  status: "active",
+  created_at: "2025-01-01T00:00:00Z",
+  notification_settings: {
+    email_enabled: true,
+    new_conversations: true,
+    unread_messages: false,
+    weekly_reports: true
+  }
 };
 
 const mockNotifications: NotificationPreferences = {
@@ -72,7 +78,7 @@ export default function Settings() {
   const handleSaveProfile = async () => {
     setIsSaving(true);
     try {
-      await api.updateUserProfile({ name: profile.name, email: profile.email });
+      await api.updateUserProfile({ full_name: profile.full_name, email: profile.email });
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -120,7 +126,7 @@ export default function Settings() {
     }
 
     try {
-      await api.inviteTeamMember(profile.tenant.id, inviteEmail, inviteRole);
+      await api.inviteTeamMember('default-tenant', inviteEmail, inviteRole);
       toast.success("Invitation sent!");
       setShowInvite(false);
       setInviteEmail("");
@@ -193,27 +199,27 @@ export default function Settings() {
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
                 <CardDescription>Update your personal details</CardDescription>
-              </CardHeader>
+              </CardHeader>full_
               <CardContent className="space-y-6">
                 <div className="flex items-center gap-6">
                   <Avatar className="h-20 w-20">
                     <AvatarImage src={profile.avatar_url} />
                     <AvatarFallback className="text-xl bg-primary text-primary-foreground">
-                      {getInitials(profile.name)}
+                      {getInitials(profile.full_name)}
                     </AvatarFallback>
                   </Avatar>
                   <Button variant="outline">
                     <Upload className="h-4 w-4 mr-2" />
                     Change Photo
                   </Button>
-                </div>
-
+                </div>full_
+full_
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
                     <Label>Full Name</Label>
                     <Input
-                      value={profile.name}
-                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                      value={profile.full_name}
+                      onChange={(e) => setProfile({ ...profile, full_name: e.target.value })}
                     />
                   </div>
                   <div>
@@ -226,7 +232,7 @@ export default function Settings() {
                   </div>
                   <div>
                     <Label>Company</Label>
-                    <Input value={profile.tenant.name} disabled />
+                    <Input value="Default Company" disabled />
                   </div>
                   <div>
                     <Label>Role</Label>
