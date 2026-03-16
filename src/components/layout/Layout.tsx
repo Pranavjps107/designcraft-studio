@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom';
 import {
     LayoutDashboard,
     MessageSquare,
@@ -15,6 +15,7 @@ import {
     ChevronDown
 } from 'lucide-react';
 import { useState } from 'react';
+import { useAuth } from '@/hooks/useAuth';
 
 interface NavItem {
     name: string;
@@ -46,6 +47,8 @@ const navigation: NavItem[] = [
 
 export function Layout() {
     const location = useLocation();
+    const navigate = useNavigate();
+    const { user, logout } = useAuth();
     const [crmExpanded, setCrmExpanded] = useState(true);
 
     return (
@@ -196,11 +199,22 @@ export function Layout() {
                 <div className="p-3 border-t border-sidebar-border">
                     <div className="flex items-center gap-3 px-3 py-2 rounded-lg hover:bg-sidebar-active cursor-pointer transition-colors">
                         <div className="w-8 h-8 rounded-full bg-primary text-primary-foreground flex items-center justify-center text-sm font-medium">
-                            P
+                            {user?.full_name?.charAt(0)?.toUpperCase() || 'U'}
                         </div>
                         <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">Pranav</p>
+                            <p className="text-sm font-medium text-foreground truncate">
+                                {user?.full_name || 'User'}
+                            </p>
                         </div>
+                        <button
+                            onClick={() => {
+                                logout();
+                                navigate('/login');
+                            }}
+                            className="text-xs text-muted-foreground hover:text-foreground"
+                        >
+                            Logout
+                        </button>
                     </div>
                 </div>
             </aside>

@@ -1,11 +1,12 @@
 // API Client Configuration
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8001';
 const AUTH_BASE_URL = import.meta.env.VITE_AUTH_BASE_URL || 'http://localhost:8000';
 const AI_BASE_URL = import.meta.env.VITE_AI_BASE_URL || 'http://localhost:8002';
 
 export interface User {
   id: string;
   email: string;
-  name: string;
+  full_name: string;
   role: string;
   tenant_id: string;
   avatar_url?: string;
@@ -300,15 +301,11 @@ export interface Integration {
 export interface UserProfile {
   id: string;
   email: string;
-  name: string;
+  full_name: string;
   avatar_url?: string;
   role: string;
-  company?: string;
   tenant: { id: string; name: string };
   created_at: string;
-  notifications?: Record<string, any>;
-  language?: string;
-  theme?: string;
 }
 
 export interface NotificationPreferences {
@@ -339,6 +336,11 @@ class APIClient {
 
   constructor() {
     this.token = localStorage.getItem('access_token');
+
+    if (import.meta.env.DEV) {
+      console.info('[API] AUTH_BASE_URL:', AUTH_BASE_URL);
+      console.info('[API] API_BASE_URL:', API_BASE_URL);
+    }
   }
 
   setToken(token: string) {
@@ -375,11 +377,6 @@ class APIClient {
       headers,
       credentials: 'omit',
     });
-
-    if (response.status === 401) {
-      handleUnauthorized();
-      throw new Error('Unauthorized - redirecting to login');
-    }
 
     if (!response.ok) {
       const error = await response.json().catch(() => ({ message: response.statusText }));
@@ -419,18 +416,24 @@ class APIClient {
   // ==================== AUTH APIs ====================
 
   async login(email: string, password: string): Promise<AuthResponse> {
-    const response = await fetch(`${AUTH_BASE_URL}/v1/auth/login`, {
+    const url = `${AUTH_BASE_URL}/v1/auth/login`;
+    console.log('[API] Login URL:', url);
+
+    const response = await fetch(url, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ email, password }),
     });
 
+    console.log('[API] Login response status:', response.status);
+
     if (!response.ok) {
       const error = await response.json().catch(() => null);
-      throw new Error(error?.error?.message || error?.message || 'Login failed');
+      throw new Error(error?.error?.message || 'Login failed');
     }
 
     const data = await response.json();
+    console.log('[API] Login success data:', data);
 
     this.setToken(data.access_token);
     localStorage.setItem('refresh_token', data.refresh_token);
@@ -441,22 +444,37 @@ class APIClient {
   async register(data: {
     email: string;
     password: string;
-    name: string;
-    company?: string;
-    phone?: string;
-  }): Promise<AuthResponse> {
-    const response = await this.request<AuthResponse & { token?: string }>(`${AUTH_BASE_URL}/v1/auth/register`, {
+    full_name: string;
+    tenant_name: string;
+  }): Promise<{ user_id: string }> {
+    const response = await this.request<{ user_id: string }>(`${AUTH_BASE_URL}/v1/auth/register`, {
       method: 'POST',
-      body: JSON.stringify(data),
+      body: JSON.stringify({
+        email: data.email,
+        password: data.password,
+        full_name: data.full_name,
+        tenant_name: data.tenant_name,
+      }),
     });
 
-    if (response.access_token) {
-      this.setToken(response.access_token);
-    } else if (response.token) {
-      this.setToken(response.token);
-    }
-
     return response;
+  }
+
+  async verifyToken(token: string): Promise<{
+    user_id: string;
+    tenant_id: string;
+    email: string;
+    role: string;
+    scopes: string[];
+  }> {
+    return this.request(`${AUTH_BASE_URL}/v1/auth/verify`, {
+      method: 'POST',
+      body: JSON.stringify({ token }),
+    });
+  }
+
+  async refreshToken(): Promise<AuthResponse> {
+    throw new Error('Token refresh not supported by this API');
   }
 
   async forgotPassword(email: string): Promise<{ message: string }> {
@@ -1110,16 +1128,9 @@ class APIClient {
     return this.request(`${AI_BASE_URL}/v1/settings/profile`);
   }
 
-  async updateUserProfile(data: {
-    name?: string;
-    avatar_url?: string;
-    language?: string;
-    theme?: string;
-    notifications?: Record<string, any>;
-  }): Promise<UserProfile> {
-    return this.request(`${AI_BASE_URL}/v1/settings/profile`, {
+  async updateUserProfile(data: Partial<UserProfile>): Promise<UserProfile> {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me`, {
       method: 'PATCH',
-      body: JSON.stringify(data),
     });
   }
 
@@ -1146,27 +1157,13 @@ class APIClient {
   }
 
   async changePassword(currentPassword: string, newPassword: string): Promise<{ success: boolean; message: string }> {
-    return this.request(`${AUTH_BASE_URL}/v1/auth/change-password`, {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me/change-password?current_password=${encodeURIComponent(currentPassword)}&new_password=${encodeURIComponent(newPassword)}`, {
       method: 'POST',
-      body: JSON.stringify({ current_password: currentPassword, new_password: newPassword }),
     });
   }
 
-  async getActiveSessions(): Promise<{
-    sessions: Array<{
-      id: string;
-      device: string;
-      ip_address: string;
-      location: string;
-      last_active: string;
-      is_current: boolean;
-    }>
-  }> {
-    return this.request(`${AUTH_BASE_URL}/v1/security/sessions`);
-  }
-
-  async revokeSession(sessionId: string): Promise<{ success: boolean }> {
-    return this.request(`${AUTH_BASE_URL}/v1/security/sessions/${sessionId}`, {
+  async deleteAccount(password: string): Promise<{ success: boolean; message: string }> {
+    return this.request(`${AUTH_BASE_URL}/v1/users/me?password=${encodeURIComponent(password)}`, {
       method: 'DELETE',
     });
   }

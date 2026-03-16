@@ -14,18 +14,34 @@ import { toast } from "sonner";
 import api, { UserProfile, NotificationPreferences, TeamMember } from "@/lib/api";
 
 
+// Mock data
+const mockProfile: UserProfile = {
+  id: "1",
+  email: "john@acme.com",
+  name: "Pranav",
+  avatar_url: "",
+  role: "admin",
+  tenant: { id: "1", name: "Acme Inc." },
+  created_at: "2025-01-01T00:00:00Z"
+};
 
+const mockNotifications: NotificationPreferences = {
+  email_enabled: true,
+  new_conversations: true,
+  unread_messages: false,
+  weekly_reports: true
+};
+
+const mockTeamMembers: TeamMember[] = [
+  { id: "1", email: "john@acme.com", name: "Pranav", role: "owner", created_at: "2025-01-01T00:00:00Z", last_active: "2 min ago" },
+  { id: "2", email: "jane@acme.com", name: "Jane Smith", role: "admin", created_at: "2025-01-05T00:00:00Z", last_active: "1 hour ago" },
+  { id: "3", email: "bob@acme.com", name: "Bob Johnson", role: "user", created_at: "2025-01-12T00:00:00Z", last_active: "1 day ago" },
+];
 
 export default function Settings() {
-  const [profile, setProfile] = useState<UserProfile | null>(null);
-  const [notifications, setNotifications] = useState<NotificationPreferences>({
-    email_enabled: true,
-    new_conversations: true,
-    unread_messages: false,
-    weekly_reports: true,
-  });
-  const [teamMembers, setTeamMembers] = useState<TeamMember[]>([]);
-  const [isLoadingSettings, setIsLoadingSettings] = useState(true);
+  const [profile, setProfile] = useState<UserProfile>(mockProfile);
+  const [notifications, setNotifications] = useState<NotificationPreferences>(mockNotifications);
+  const [teamMembers, setTeamMembers] = useState<TeamMember[]>(mockTeamMembers);
   const [isSaving, setIsSaving] = useState(false);
   const [showChangePassword, setShowChangePassword] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -70,8 +86,7 @@ export default function Settings() {
     if (!profile) return;
     setIsSaving(true);
     try {
-      const updated = await api.updateUserProfile({ name: profile.name });
-      if (updated) setProfile(updated);
+      await api.updateUserProfile({ name: profile.name, email: profile.email });
       toast.success("Profile updated successfully!");
     } catch (error) {
       toast.error("Failed to update profile");
@@ -119,7 +134,7 @@ export default function Settings() {
     }
 
     try {
-      await api.inviteTeamMember(inviteEmail, inviteRole);
+      await api.inviteTeamMember(profile.tenant.id, inviteEmail, inviteRole);
       toast.success("Invitation sent!");
       setShowInvite(false);
       setInviteEmail("");
@@ -213,50 +228,46 @@ export default function Settings() {
               <CardHeader>
                 <CardTitle>Profile Information</CardTitle>
                 <CardDescription>Update your personal details</CardDescription>
-              </CardHeader>
+              </CardHeader>full_
               <CardContent className="space-y-6">
-                {profile ? (
-                  <>
-                    <div className="flex items-center gap-6">
-                      <Avatar className="h-20 w-20">
-                        <AvatarImage src={profile.avatar_url} />
-                        <AvatarFallback className="text-xl bg-primary text-primary-foreground">
-                          {getInitials(profile.name)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <Button variant="outline">
-                        <Upload className="h-4 w-4 mr-2" />
-                        Change Photo
-                      </Button>
-                    </div>
+                <div className="flex items-center gap-6">
+                  <Avatar className="h-20 w-20">
+                    <AvatarImage src={profile.avatar_url} />
+                    <AvatarFallback className="text-xl bg-primary text-primary-foreground">
+                      {getInitials(profile.name)}
+                    </AvatarFallback>
+                  </Avatar>
+                  <Button variant="outline">
+                    <Upload className="h-4 w-4 mr-2" />
+                    Change Photo
+                  </Button>
+                </div>
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div>
-                        <Label>Full Name</Label>
-                        <Input
-                          value={profile.name}
-                          onChange={(e) => setProfile({ ...profile, name: e.target.value })}
-                        />
-                      </div>
-                      <div>
-                        <Label>Email</Label>
-                        <Input
-                          type="email"
-                          value={profile.email}
-                          disabled
-                        />
-                      </div>
-                      {profile.company && (
-                        <div>
-                          <Label>Company</Label>
-                          <Input value={profile.company} disabled />
-                        </div>
-                      )}
-                      <div>
-                        <Label>Role</Label>
-                        <Input value={profile.role} disabled />
-                      </div>
-                    </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <Label>Full Name</Label>
+                    <Input
+                      value={profile.name}
+                      onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Email</Label>
+                    <Input
+                      type="email"
+                      value={profile.email}
+                      onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                    />
+                  </div>
+                  <div>
+                    <Label>Company</Label>
+                    <Input value={profile.tenant.name} disabled />
+                  </div>
+                  <div>
+                    <Label>Role</Label>
+                    <Input value={profile.role} disabled />
+                  </div>
+                </div>
 
                     <Button onClick={handleSaveProfile} disabled={isSaving}>
                       {isSaving ? <Loader2 className="h-4 w-4 mr-2 animate-spin" /> : <Save className="h-4 w-4 mr-2" />}
